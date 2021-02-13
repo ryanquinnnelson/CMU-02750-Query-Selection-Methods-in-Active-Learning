@@ -130,3 +130,6 @@ dmypy.json
 
 # Mac generated
 .DS_Store
+
+# Ryan added for PyCharm
+.idea/
