@@ -92,11 +92,10 @@ def test__sum_losses():
 
     # define dummy loss function for testing purposes
     def loss_func(a, b, labels):
-        l = labels
-        return a + b
+        return a
 
     total = packages.iwal.iwal_functions._sum_losses(lr, s, loss_func, labels_t)
-    assert total == 0.2
+    assert total == 0.1
 
 
 def test_iwal_query_selected_for_labeling():
@@ -107,8 +106,8 @@ def test_iwal_query_selected_for_labeling():
     hypothesis_space = [lr]
 
     # example labeled set
-    x_t = [[3.1, 1.1]]
-    y_t = [1]
+    x_t = np.asarray([3, 1]).reshape(1, -1)  # single element with 2 features
+    y_t = np.asarray([1])
     selected = []
 
     # dummy function for testing
@@ -118,7 +117,7 @@ def test_iwal_query_selected_for_labeling():
     # define dummy loss function for testing purposes
     def loss_func(a, b, labels):
         l = labels
-        return a + b
+        return a
 
     history = {
         'X': [],
@@ -147,8 +146,8 @@ def test_iwal_query_not_selected_for_labeling():
     hypothesis_space = [lr]
 
     # example labeled set
-    x_t = [[3.1, 1.1]]
-    y_t = [1]
+    x_t = np.asarray([3, 1]).reshape(1, -1)  # single element with 2 features
+    y_t = np.asarray([1])
     selected = []
 
     # dummy function for testing

@@ -24,11 +24,13 @@ def _append_history(history, x_t, y_t, p_t, q_t):
     else:
         raise ValueError('history dictionary does not contain the required keys: X,y,c,Q')
 
-
-# ?? predict_proba does not return a single value? how to determine minimum in that case?
+#?? predict_proba for log_loss vs pred_decision for hinge_loss
 def _sum_losses(h, selected, loss, labels):
     """
     Sums losses over set of labeled elements.
+
+    Uses decision_function() for hinge_loss.
+    Would require predict_proba for log_loss. Need to refactor to allow both.
     :param h:
     :param selected:
     :param loss:
@@ -38,7 +40,7 @@ def _sum_losses(h, selected, loss, labels):
     total = 0
     for x, y_true, c in selected:
         # calculate loss for this sample
-        y_predict = h.predict(x)  # predict_proba??
+        y_predict = h.decision_function(x)
         curr_loss = loss(y_true, y_predict, labels=labels)
         iwal_loss = c * curr_loss
 
