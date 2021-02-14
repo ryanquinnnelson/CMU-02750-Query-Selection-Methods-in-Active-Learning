@@ -3,7 +3,7 @@ from scipy.stats import bernoulli
 
 def _append_history(history, x_t, y_t, p_t, q_t):
     """
-    Adds new sample to given query history.
+    Adds new sample to given query history dictionary.
 
     :param history:
     :param x_t:
@@ -22,8 +22,30 @@ def _append_history(history, x_t, y_t, p_t, q_t):
         raise ValueError('history dictionary does not contain the required keys: X,y,c,Q')
 
 
+def _sum_losses(h, selected, loss, labels):
+    """
+    Sums losses over set of labeled elements.
+    :param h:
+    :param selected:
+    :param loss:
+    :param labels:
+    :return:
+    """
+    total = 0
+    for x, y_true, c in selected:
+        # calculate loss for this sample
+        y_predict = h.predict(x)
+        curr_loss = loss(y_true, y_predict, labels=labels)
+        iwal_loss = c * curr_loss
+
+        # update total
+        total += iwal_loss
+
+    return total
+
+
 # ?? difference between loss function L() vs l()
-def _get_min_hypothesis(h, s, loss, labels):
+def _get_min_hypothesis(hypothesis_space, selected, loss, labels):
     """
     Calculates the minimum hypothesis in the hypothesis space, given a
     set of labeled samples with weights. Minimum is defined using the
@@ -31,8 +53,8 @@ def _get_min_hypothesis(h, s, loss, labels):
 
     h_t = argmin_{h in H} SUM_{x,y,c in S} c * l(h(x),y)
 
-    :param h: Hypothesis space, as a List of scikit-learn objects.
-    :param s: Set representing samples chosen for labeling, where each
+    :param hypothesis_space: Hypothesis space, as a List of scikit-learn objects.
+    :param selected: Set representing samples chosen for labeling, where each
     element in the set is a tuple {x,y,c}. c is 1/p, where p is the
     rejection threshold probability for this sample.
     :param loss: Python function which calculates loss. Function must
@@ -41,32 +63,27 @@ def _get_min_hypothesis(h, s, loss, labels):
     :return: Object of scikit-learn model class h that is optimal at
     current time step according to IWAL algorithm.
     """
-    min_value = 10000
+    min_loss = 10000
     min_h = None
 
     # consider each model in hypothesis space
-    for i in range(len(h)):
+    for i in range(len(hypothesis_space)):
 
         # sum losses over all labeled elements
-        curr_value = 0
-        for x, y_true, c in s:
-            # calculate loss
-            y_predict = h[i].predict(x)
-            curr_loss = loss(y_true, y_predict, labels=labels)
-            iwal_loss = c * curr_loss
-            curr_value += iwal_loss
+        h = hypothesis_space[i]
+        curr_loss = _sum_losses(h, selected, loss, labels)
 
-        # update minimum
-        if curr_value < min_value:
-            min_value = curr_value
-            min_h = h[i]
+        # update minimum loss
+        if curr_loss < min_loss:
+            min_loss = curr_loss
+            min_h = hypothesis_space[i]
 
     return min_h
 
 
 # ?? S vs history
 # ?? how to choose Q_t? use Bernoulli distribution?
-# ?? no y_t in parameters
+# ?? no y_t in parameters but listed in documentation
 # ?? no S in parameters
 # ?? where is H defined? hypothesis space
 # ?? H is not list of models?
