@@ -177,3 +177,37 @@ def test_iwal_query_not_selected_for_labeling():
         assert True
     else:
         assert False
+
+
+def test__loss_difference():
+    test_y_true = np.asarray([0, 1])
+    test_y_pred_i = np.asarray([1, 1])
+    test_y_pred_j = np.asarray([0, 1])
+    labels = [0, 1]
+
+    actual = packages.iwal.iwal_functions._loss_difference(test_y_true, test_y_pred_i, test_y_pred_j, hinge_loss,
+                                                           labels)
+    assert actual == 0.5
+
+
+def test__bootstrap_probability():
+    p_min = 0.1
+    max_loss_difference = 0.5
+    actual = packages.iwal.iwal_functions._bootstrap_probability(p_min, max_loss_difference)
+    assert actual == 0.55
+
+
+def test_bootstrap_one_hypothesis():
+    x = [[3, 1]]
+
+    # example data set
+    X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
+    y = [1, 0]
+    lr = LogisticRegression().fit(X, y)
+    hypothesis_space = [lr]
+    p_min = 0.1
+    labels = [0, 1]
+
+    actual = packages.iwal.iwal_functions.bootstrap(x, hypothesis_space, hinge_loss,labels,p_min)
+    assert actual == p_min
+

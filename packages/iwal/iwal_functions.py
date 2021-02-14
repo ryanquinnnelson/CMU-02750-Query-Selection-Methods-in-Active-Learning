@@ -1,5 +1,5 @@
 from scipy.stats import bernoulli
-
+import numpy as np
 
 def _append_history(history, x_t, y_t, p_t, q_t):
     """
@@ -49,7 +49,8 @@ def _sum_losses(h, selected, loss, labels):
 # ?? difference between loss function L() vs l()
 def _get_min_hypothesis(hypothesis_space, selected, loss, labels):
     """
-    Calculates the minimum hypothesis in the hypothesis space, given a set of labeled samples with weights. Minimum is defined using the following equation:
+    Calculates the minimum hypothesis in the hypothesis space, given a set of labeled samples with weights. Minimum is
+    defined using the following formula:
 
     h_t = argmin_{h in H} SUM_{x,y,c in S} c * l(h(x),y)
 
@@ -83,8 +84,8 @@ def _get_min_hypothesis(hypothesis_space, selected, loss, labels):
 # ?? confirm h is list of models? Algorithm 1 requires argmin over all h in H...
 def iwal_query(x_t, y_t, selected, rejection_threshold, history, hypothesis_space, loss, labels, **kwargs):
     """
-    This function implements a single query IWAL algorithm from the paper by Beygelzimer et al. See
-    https://arxiv.org/pdf/0812.4952.pdf
+    This function implements Algorithm 1 IWAL (subroutine rejection-threshold) from the paper by Beygelzimer et al. See
+    https://arxiv.org/pdf/0812.4952.pdf.
 
     :param loss: Python function which calculates loss for a given hypothesis.
     :param labels: List of possible labels for the data set.
@@ -122,3 +123,71 @@ def iwal_query(x_t, y_t, selected, rejection_threshold, history, hypothesis_spac
     h_t = _get_min_hypothesis(hypothesis_space, selected, loss, labels)
 
     return h_t
+
+
+def _loss_difference(y_true, y_pred_i, y_pred_j, loss, labels):
+    """
+    Calculates the difference in loss between two predictions.
+
+    :param y_true:
+    :param y_pred_i:
+    :param y_pred_j:
+    :param labels:
+    :param loss:
+    :return:
+    """
+    loss_i = loss(y_true, y_pred_i,labels=labels)
+    loss_j = loss(y_true, y_pred_j,labels=labels)
+    return loss_i - loss_j
+
+
+def _bootstrap_probability(p_min, max_loss_difference):
+    """
+    Calculates the rejection threshold probability using the following formula:
+
+    p_t = p_min + (1 - p_min) * max_loss_difference
+
+    :param p_min:
+    :param max_loss_difference:
+    :return:
+    """
+    return p_min + (1 - p_min) * max_loss_difference
+
+
+# ?? don't use loss parameter defined in the parameters
+# ?? what to return if hypothesis space or labels are empty
+# ?? how to know it is working correctly
+def bootstrap(x, hypothesis_space, loss, labels, p_min=0.1):
+    """
+    This function implements the bootstrap rejection threshold subroutine defined in 7.2. Bootstrap instantiation of
+    IWAL from the paper by Beygelzimer et al. See https://arxiv.org/pdf/0812.4952.pdf. Calculates rejection threshold
+    probability for a single sample using the following formula:
+
+    p_t = p_min + (1 - p_min) * {max_{y, h_i, h_j} L(h_i(x), y) - L(h_j(x), y)}
+
+    :param x:
+    :param hypothesis_space:
+    :param labels:
+    :param loss:
+    :param p_min:
+    :return:
+    """
+    max_loss_difference = -10000
+
+    # consider every pair of models in the hypothesis space combined with every label
+    for i in range(len(hypothesis_space)):
+        for j in range(len(hypothesis_space)):
+            for label in labels:
+
+                # calculate loss difference between models
+                y_true = np.full(shape=len(x), fill_value=label, dtype=np.int)
+                y_pred_i = hypothesis_space[i].predict(x)
+                y_pred_j = hypothesis_space[j].predict(x)
+
+                curr_difference = _loss_difference(y_true, y_pred_i, y_pred_j, loss, labels)
+
+                # update max
+                if curr_difference > max_loss_difference:
+                    max_loss_difference = curr_difference
+
+    return _bootstrap_probability(p_min, max_loss_difference)
