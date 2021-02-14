@@ -1,4 +1,4 @@
-import iwal.iwal_functions
+import packages.iwal.iwal_functions
 
 
 def test_append_history_dictionary_matches():
@@ -14,6 +14,9 @@ def test_append_history_dictionary_matches():
     p_t = 0.5
     q_t = 1
 
-    iwal.iwal_functions.append_history(h, x_t, y_t, p_t, q_t)
+    packages.iwal.iwal_functions._append_history(h, x_t, y_t, p_t, q_t)
 
-    # assert x_t in h['X']
+    assert x_t in h['X']
+    assert y_t in h['y']
+    assert p_t in h['c']
+    assert q_t in h['Q']
