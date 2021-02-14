@@ -27,7 +27,7 @@ def test_append_history_dictionary_matches():
     assert q_t in history['Q']
 
 
-def test__loss_difference_hinge_loss():
+def test__loss_difference_hinge_loss_for_multiple_elements():
 
     X = [[0], [1]]
     y = [-1, 1]
@@ -50,7 +50,28 @@ def test__loss_difference_hinge_loss():
     assert actual == expected
 
 
-def test__loss_difference_implemented_loss_function():
+def test__loss_difference_for_not_implemented_loss_function():
+
+    X = [[0], [1]]
+    y = [-1, 1]
+    est1 = svm.LinearSVC(random_state=0)
+    est1.fit(X, y)
+    pred_decision1 = est1.decision_function([[-2], [3], [0.5]])
+
+    est2 = LogisticRegression()
+    est2.fit(X, y)
+    pred_decision2 = est2.decision_function([[-2], [3], [0.5]])
+
+    test_y_true = np.asarray([-1, 1, 1])
+    labels = [0, 1]
+    loss_function = 'log_loss'
+
+    with pytest.raises(NotImplementedError):
+        packages.iwal.iwal_functions._loss_difference(test_y_true, pred_decision1, pred_decision2,
+                                                                      labels, loss_function)
+
+
+def test__loss_difference_for_hinge_loss_different_models():
 
     X = [[0], [1]]
     y = [-1, 1]
@@ -75,25 +96,32 @@ def test__loss_difference_implemented_loss_function():
     assert actual == expected
 
 
-def test__loss_difference_not_implemented_loss_function():
+def test__loss_difference_for_hinge_loss_same_models():
+    # example data set
+    X1 = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
+    y1 = [1, 0]
+    lr1 = LogisticRegression().fit(X1, y1)
 
-    X = [[0], [1]]
-    y = [-1, 1]
-    est1 = svm.LinearSVC(random_state=0)
-    est1.fit(X, y)
-    pred_decision1 = est1.decision_function([[-2], [3], [0.5]])
+    X2 = [[0, 0], [10, 10]]
+    y2 = [1, 0]
+    lr2 = LogisticRegression().fit(X2, y2)
 
-    est2 = LogisticRegression()
-    est2.fit(X, y)
-    pred_decision2 = est2.decision_function([[-2], [3], [0.5]])
-
-    test_y_true = np.asarray([-1, 1, 1])
+    # example labeled set
     labels = [0, 1]
-    loss_function = 'log_loss'
 
-    with pytest.raises(NotImplementedError):
-        packages.iwal.iwal_functions._loss_difference(test_y_true, pred_decision1, pred_decision2,
-                                                                      labels, loss_function)
+    x3 = [[3, 1]]
+    y3 = [1]
+
+    df1 = lr1.decision_function(x3)
+    df2 = lr2.decision_function(x3)
+
+    hl1 = hinge_loss(y3, df1, labels=labels)
+    hl2 = hinge_loss(y3, df2, labels=labels)
+    expected = hl1 - hl2
+    loss_function = 'hinge_loss'
+
+    actual = packages.iwal.iwal_functions._loss_difference(y3, df1, df2,labels, loss_function)
+    assert actual == expected
 
 
 def test__bootstrap_probability():
@@ -194,61 +222,52 @@ def test__sum_losses_hinge_loss():
     assert actual == expected
 
 
+def test__get_min_hypothesis():
+    # example data set
+    X1 = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
+    y1 = [1, 0]
+    lr1 = LogisticRegression().fit(X1, y1) #sum hinge loss is 0.4678294064768459
+
+    X2 = [[0, 0], [10, 10]]
+    y2 = [1, 0]
+    lr2 = LogisticRegression().fit(X2, y2) #sum hinge loss is 0.8374835459783136
+
+    H = [lr1,lr2]
+
+    # example labeled set
+    s = [([[3, 1]], [1], 0.1),
+         ([[4, 1]], [0], 0.2), ]
+    labels = [0, 1]
+    loss_function = 'hinge_loss'
+
+    expected = lr1
+    actual = packages.iwal.iwal_functions._get_min_hypothesis(H, s, labels, loss_function )
+    assert expected == actual
+
+
+def get__choose_flip_action_heads():
+    s = []
+    x_t = np.asarray([1,2,3])
+    y_t = np.asarray([1])
+    p_t = 0.25
+    Q_t = 1
+    packages.iwal.iwal_functions._choose_flip_action(Q_t, s, x_t, y_t, p_t)
+    assert len(s) ==1
+    assert s[0][2] == 1/0.25
+
+
+def get__choose_flip_action_tails():
+    s = []
+    x_t = np.asarray([1, 2, 3])
+    y_t = np.asarray([1])
+    p_t = 0.25
+    Q_t = 0
+    packages.iwal.iwal_functions._choose_flip_action(Q_t, s, x_t, y_t, p_t)
+    assert len(s) == 0
 
 
 
-    #
-    # def test__get_min_hypothesis_empty_hypothesis_space():
-    #     hypothesis_space = []
-    #     s = {(1, 1, 0.5)}
-    #     labels = [0, 1]
-    #
-    #     min_h = packages.iwal.iwal_functions._get_min_hypothesis(hypothesis_space, s, log_loss, labels)
-    #     if min_h is None:
-    #         assert True
-    #     else:
-    #         assert False
-    #
-    #
-    # def test__get_min_hypothesis_empty_set():
-    #     # example data set
-    #     X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
-    #     y = [1, 0]
-    #
-    #     lr = LogisticRegression().fit(X, y)
-    #     hypothesis_space = [lr]
-    #     s = set()
-    #     labels = [0, 1]
-    #
-    #     min_h = packages.iwal.iwal_functions._get_min_hypothesis(hypothesis_space, s, log_loss, labels)
-    #     if min_h is lr:
-    #         assert True
-    #     else:
-    #         assert False
-    #
-    #
-    # def test__get_min_hypothesis_one_hypothesis():
-    #     # example data set
-    #     X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
-    #     y = [1, 0]
-    #     lr = LogisticRegression().fit(X, y)
-    #     hypothesis_space = [lr]
-    #
-    #     # example labeled set
-    #     x_t = [[3, 1]]
-    #     y_t = [1]
-    #     c_t = 0.1
-    #     s = [(x_t, y_t, c_t)]
-    #
-    #     labels_t = [0, 1]
-    #
-    #     min_h = packages.iwal.iwal_functions._get_min_hypothesis(hypothesis_space, s, log_loss, labels_t)
-    #     if min_h is lr:
-    #         assert True
-    #     else:
-    #         assert False
-    #
-    #
+
 
     #
     #
