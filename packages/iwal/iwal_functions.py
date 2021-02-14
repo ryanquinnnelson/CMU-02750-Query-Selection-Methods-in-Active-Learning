@@ -1,6 +1,7 @@
 from scipy.stats import bernoulli
 import numpy as np
 
+
 def _append_history(history, x_t, y_t, p_t, q_t):
     """
     Adds new sample to given query history dictionary.
@@ -106,7 +107,10 @@ def iwal_query(x_t, y_t, selected, rejection_threshold, history, hypothesis_spac
     """
 
     # derive probability of requesting label for x_t
-    p_t = rejection_threshold(x_t, history)
+    if kwargs:
+        p_t = rejection_threshold(x_t, history, kwargs)  # pass additional arguments
+    else:
+        p_t = rejection_threshold(x_t, history)
 
     # flip a coin using derived probability
     Q_t = bernoulli.rvs(p_t)
@@ -136,8 +140,8 @@ def _loss_difference(y_true, y_pred_i, y_pred_j, loss, labels):
     :param loss:
     :return:
     """
-    loss_i = loss(y_true, y_pred_i,labels=labels)
-    loss_j = loss(y_true, y_pred_j,labels=labels)
+    loss_i = loss(y_true, y_pred_i, labels=labels)
+    loss_j = loss(y_true, y_pred_j, labels=labels)
     return loss_i - loss_j
 
 
@@ -157,7 +161,7 @@ def _bootstrap_probability(p_min, max_loss_difference):
 # ?? don't use loss parameter defined in the parameters
 # ?? what to return if hypothesis space or labels are empty
 # ?? how to know it is working correctly
-def bootstrap(x, hypothesis_space, loss, labels, p_min=0.1):
+def bootstrap(x, history, additional_args):
     """
     This function implements the bootstrap rejection threshold subroutine defined in 7.2. Bootstrap instantiation of
     IWAL from the paper by Beygelzimer et al. See https://arxiv.org/pdf/0812.4952.pdf. Calculates rejection threshold
@@ -165,13 +169,19 @@ def bootstrap(x, hypothesis_space, loss, labels, p_min=0.1):
 
     p_t = p_min + (1 - p_min) * {max_{y, h_i, h_j} L(h_i(x), y) - L(h_j(x), y)}
 
+    :param history:
     :param x:
-    :param hypothesis_space:
-    :param labels:
-    :param loss:
-    :param p_min:
+    :param additional_args:
     :return:
     """
+
+    # set additional arguments
+    hypothesis_space = additional_args['H']
+    loss = additional_args['loss']
+    labels = additional_args['labels']
+    p_min = additional_args['p_min']
+
+    # find max loss difference
     max_loss_difference = -10000
 
     # consider every pair of models in the hypothesis space combined with every label
@@ -190,4 +200,6 @@ def bootstrap(x, hypothesis_space, loss, labels, p_min=0.1):
                 if curr_difference > max_loss_difference:
                     max_loss_difference = curr_difference
 
-    return _bootstrap_probability(p_min, max_loss_difference)
+    # calculate p_t
+    p_t = _bootstrap_probability(p_min, max_loss_difference)
+    return p_t

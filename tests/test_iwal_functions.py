@@ -207,7 +207,13 @@ def test_bootstrap_one_hypothesis():
     hypothesis_space = [lr]
     p_min = 0.1
     labels = [0, 1]
+    history = dict()
+    additional = {
+        'H': hypothesis_space,
+        'loss': hinge_loss,
+        'labels': labels,
+        'p_min': p_min
+    }
 
-    actual = packages.iwal.iwal_functions.bootstrap(x, hypothesis_space, hinge_loss,labels,p_min)
+    actual = packages.iwal.iwal_functions.bootstrap(x, history, additional)
     assert actual == p_min
-
