@@ -129,7 +129,8 @@ def test_iwal_query_selected_for_labeling():
 
     labels_t = [0, 1]
 
-    h_t = packages.iwal.iwal_functions.iwal_query(x_t, y_t, selected, rejection_func, history, hypothesis_space, loss_func, labels_t)
+    h_t = packages.iwal.iwal_functions.iwal_query(x_t, y_t, selected, rejection_func, history, hypothesis_space,
+                                                  loss_func, labels_t)
 
     assert len(selected) == 1
     if h_t is lr:
@@ -168,6 +169,11 @@ def test_iwal_query_not_selected_for_labeling():
 
     labels_t = [0, 1]
 
-    h_t = packages.iwal.iwal_functions.iwal_query(x_t, y_t, selected, rejection_func, history, hypothesis_space, loss_func, labels_t)
+    h_t = packages.iwal.iwal_functions.iwal_query(x_t, y_t, selected, rejection_func, history, hypothesis_space,
+                                                  loss_func, labels_t)
 
     assert len(selected) == 0
+    if h_t is lr:
+        assert True
+    else:
+        assert False
