@@ -64,7 +64,7 @@ def _bootstrap_probability(p_min: float, max_loss_difference: float) -> float:
 # ?? what loss function to use? don't use loss parameter defined in the parameters
 # ?? what to return if hypothesis space or labels are empty
 # ?? how to know it is working correctly
-# ?? can p_t be greater than 1?
+# ?? can p_t be greater than 1? should I be normalizing?
 # ?? can I skip i == j
 def _bootstrap(x: np.ndarray, hypothesis_space: list, labels: list, p_min: float, loss_function: str) -> float:
     """
