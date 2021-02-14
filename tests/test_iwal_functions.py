@@ -97,3 +97,77 @@ def test__sum_losses():
 
     total = packages.iwal.iwal_functions._sum_losses(lr, s, loss_func, labels_t)
     assert total == 0.2
+
+
+def test_iwal_query_selected_for_labeling():
+    # example data set
+    X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
+    y = [1, 0]
+    lr = LogisticRegression().fit(X, y)
+    hypothesis_space = [lr]
+
+    # example labeled set
+    x_t = [[3.1, 1.1]]
+    y_t = [1]
+    selected = []
+
+    # dummy function for testing
+    def rejection_func(x_t, history):
+        return 1.0
+
+    # define dummy loss function for testing purposes
+    def loss_func(a, b, labels):
+        l = labels
+        return a + b
+
+    history = {
+        'X': [],
+        'y': [],
+        'c': [],
+        'Q': []
+    }
+
+    labels_t = [0, 1]
+
+    h_t = packages.iwal.iwal_functions.iwal_query(x_t, y_t, selected, rejection_func, history, hypothesis_space, loss_func, labels_t)
+
+    assert len(selected) == 1
+    if h_t is lr:
+        assert True
+    else:
+        assert False
+
+
+def test_iwal_query_not_selected_for_labeling():
+    # example data set
+    X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
+    y = [1, 0]
+    lr = LogisticRegression().fit(X, y)
+    hypothesis_space = [lr]
+
+    # example labeled set
+    x_t = [[3.1, 1.1]]
+    y_t = [1]
+    selected = []
+
+    # dummy function for testing
+    def rejection_func(x_t, history):
+        return 0.0
+
+    # define dummy loss function for testing purposes
+    def loss_func(a, b, labels):
+        l = labels
+        return a + b
+
+    history = {
+        'X': [],
+        'y': [],
+        'c': [],
+        'Q': []
+    }
+
+    labels_t = [0, 1]
+
+    h_t = packages.iwal.iwal_functions.iwal_query(x_t, y_t, selected, rejection_func, history, hypothesis_space, loss_func, labels_t)
+
+    assert len(selected) == 0

@@ -84,17 +84,19 @@ def _get_min_hypothesis(hypothesis_space, selected, loss, labels):
 # ?? S vs history
 # ?? how to choose Q_t? use Bernoulli distribution?
 # ?? no y_t in parameters but listed in documentation
-# ?? no S in parameters
+# ?? no S in parameters but is in paper
 # ?? where is H defined? hypothesis space
 # ?? H is not list of models?
-def iwal_query(x_t, y_t, s, rejection_threshold, history, h, **kwargs):
+def iwal_query(x_t, y_t, selected, rejection_threshold, history, hypothesis_space, loss, labels, **kwargs):
     """
     This function implements a single query IWAL algorithm from the
     paper by Beygelzimer et al https://arxiv.org/pdf/0812.4952.pdf
 
+    :param loss:
+    :param labels:
     :param x_t: Sample currently being considered for labelling.
     :param y_t: True label for sample.
-    :param s: Set representing samples chosen for labeling, where each
+    :param selected: Set representing samples chosen for labeling, where each
     element in the set is a tuple {x,y,c}. c is 1/p, where p is the rejection
     threshold probability for this sample.
     :param rejection_threshold: python function, accepts current data
@@ -107,7 +109,7 @@ def iwal_query(x_t, y_t, s, rejection_threshold, history, h, **kwargs):
             y -- labels matching to data points
             p -- rejection probabilities matching to data points
             Q -- coin flips matching to data points
-    :param h: scikit-learn model class, such as
+    :param hypothesis_space: scikit-learn model class, such as
     sklearn.linear_model.LogisticRegression, etc.
     :param kwargs: dictionary of arbitrary arguments that may be required
     by rejection_threshold().
@@ -121,15 +123,15 @@ def iwal_query(x_t, y_t, s, rejection_threshold, history, h, **kwargs):
     # flip a coin using derived probability
     Q_t = bernoulli.rvs(p_t)
 
-    # record history
+    # save query in history
     _append_history(history, x_t, y_t, p_t, Q_t)
 
     # choose actions based on flip
     if Q_t == 1:  # label is requested
         c_t = 1.0 / p_t
-        s.add((x_t, y_t, c_t))  # add to set of selected samples
+        selected.append((x_t, y_t, c_t))  # add to set of selected samples
 
     # select model with least loss
-    # h_t = _get_h_min(h, s, 1)
+    h_t = _get_min_hypothesis(hypothesis_space, selected, loss, labels)
 
-    # return h_t
+    return h_t
