@@ -22,32 +22,37 @@ def _append_history(history, x_t, y_t, p_t, q_t):
         raise ValueError('history dictionary does not contain the required keys: X,y,c,Q')
 
 
-# ?? seems wrong
 # ?? difference between loss function L() vs l()
-def _get_h_min(h, s, loss, labels):
+def _get_min_hypothesis(h, s, loss, labels):
     """
-    Summary here.
+    Calculates the minimum hypothesis in the hypothesis space, given a
+    set of labeled samples with weights. Minimum is defined using the
+    following equation:
 
-    :param h: Hypothesis space. This is a List of scikit-learn objects.
+    h_t = argmin_{h in H} SUM_{x,y,c in S} c * l(h(x),y)
+
+    :param h: Hypothesis space, as a List of scikit-learn objects.
     :param s: Set representing samples chosen for labeling, where each
     element in the set is a tuple {x,y,c}. c is 1/p, where p is the
     rejection threshold probability for this sample.
-    :return: Object of scikit-learn model class H, that is optimal at
+    :param loss: Python function which calculates loss. Function must
+    accept (y_true,y_predict,labels=labels) and return a loss value.
+    :param labels: The List of possible labels over the data set.
+    :return: Object of scikit-learn model class h that is optimal at
     current time step according to IWAL algorithm.
     """
-
     min_value = 10000
     min_h = None
 
     # consider each model in hypothesis space
-    for i in len(h):
+    for i in range(len(h)):
 
         # sum losses over all labeled elements
         curr_value = 0
         for x, y_true, c in s:
             # calculate loss
-            y_pred = h[i].predict(x)
-            curr_loss = loss(y_true, y_pred, labels=labels)
+            y_predict = h[i].predict(x)
+            curr_loss = loss(y_true, y_predict, labels=labels)
             iwal_loss = c * curr_loss
             curr_value += iwal_loss
 
