@@ -26,160 +26,7 @@ def test_append_history_dictionary_matches():
     assert p_t in history['c']
     assert q_t in history['Q']
 
-#
-# def test__get_min_hypothesis_empty_hypothesis_space():
-#     hypothesis_space = []
-#     s = {(1, 1, 0.5)}
-#     labels = [0, 1]
-#
-#     min_h = packages.iwal.iwal_functions._get_min_hypothesis(hypothesis_space, s, log_loss, labels)
-#     if min_h is None:
-#         assert True
-#     else:
-#         assert False
-#
-#
-# def test__get_min_hypothesis_empty_set():
-#     # example data set
-#     X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
-#     y = [1, 0]
-#
-#     lr = LogisticRegression().fit(X, y)
-#     hypothesis_space = [lr]
-#     s = set()
-#     labels = [0, 1]
-#
-#     min_h = packages.iwal.iwal_functions._get_min_hypothesis(hypothesis_space, s, log_loss, labels)
-#     if min_h is lr:
-#         assert True
-#     else:
-#         assert False
-#
-#
-# def test__get_min_hypothesis_one_hypothesis():
-#     # example data set
-#     X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
-#     y = [1, 0]
-#     lr = LogisticRegression().fit(X, y)
-#     hypothesis_space = [lr]
-#
-#     # example labeled set
-#     x_t = [[3, 1]]
-#     y_t = [1]
-#     c_t = 0.1
-#     s = [(x_t, y_t, c_t)]
-#
-#     labels_t = [0, 1]
-#
-#     min_h = packages.iwal.iwal_functions._get_min_hypothesis(hypothesis_space, s, log_loss, labels_t)
-#     if min_h is lr:
-#         assert True
-#     else:
-#         assert False
-#
-#
-# def test__sum_losses():
-#     # example data set
-#     X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
-#     y = [1, 0]
-#     lr = LogisticRegression().fit(X, y)
-#
-#     # example labeled set
-#     x_t = np.asarray([3, 1]).reshape(1, -1)  # single element with 2 features
-#     y_t = np.asarray([1])
-#     c_t = 0.1
-#     s = [(x_t, y_t, c_t)]
-#
-#     labels_t = [0, 1]
-#
-#     # define dummy loss function for testing purposes
-#     def loss_func(a, b, labels):
-#         return a
-#
-#     total = packages.iwal.iwal_functions._sum_losses(lr, s, loss_func, labels_t)
-#     assert total == 0.1
-#
-#
-# def test_iwal_query_selected_for_labeling():
-#     # example data set
-#     X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
-#     y = [1, 0]
-#     lr = LogisticRegression().fit(X, y)
-#     hypothesis_space = [lr]
-#
-#     # example labeled set
-#     x_t = np.asarray([3, 1]).reshape(1, -1)  # single element with 2 features
-#     y_t = np.asarray([1])
-#     selected = []
-#
-#     # dummy function for testing
-#     def rejection_func(x_t, history):
-#         return 1.0
-#
-#     # define dummy loss function for testing purposes
-#     def loss_func(a, b, labels):
-#         l = labels
-#         return a
-#
-#     history = {
-#         'X': [],
-#         'y': [],
-#         'c': [],
-#         'Q': []
-#     }
-#
-#     labels_t = [0, 1]
-#
-#     h_t = packages.iwal.iwal_functions.iwal_query(x_t, y_t, selected, rejection_func, history, hypothesis_space,
-#                                                   loss_func, labels_t)
-#
-#     assert len(selected) == 1
-#     if h_t is lr:
-#         assert True
-#     else:
-#         assert False
-#
-#
-# def test_iwal_query_not_selected_for_labeling():
-#     # example data set
-#     X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
-#     y = [1, 0]
-#     lr = LogisticRegression().fit(X, y)
-#     hypothesis_space = [lr]
-#
-#     # example labeled set
-#     x_t = np.asarray([3, 1]).reshape(1, -1)  # single element with 2 features
-#     y_t = np.asarray([1])
-#     selected = []
-#
-#     # dummy function for testing
-#     def rejection_func(x_t, history):
-#         return 0.0
-#
-#     # define dummy loss function for testing purposes
-#     def loss_func(a, b, labels):
-#         l = labels
-#         return a + b
-#
-#     history = {
-#         'X': [],
-#         'y': [],
-#         'c': [],
-#         'Q': []
-#     }
-#
-#     labels_t = [0, 1]
-#
-#     h_t = packages.iwal.iwal_functions.iwal_query(x_t, y_t, selected, rejection_func, history, hypothesis_space,
-#                                                   loss_func, labels_t)
-#
-#     assert len(selected) == 0
-#     if h_t is lr:
-#         assert True
-#     else:
-#         assert False
-#
-#
+
 def test__loss_difference_hinge_loss():
 
     X = [[0], [1]]
@@ -310,3 +157,182 @@ def test_bootstrap_two_hypotheses():
 
     packages.iwal.iwal_functions._bootstrap(x, H, labels, p_min,loss_function)
 
+
+def test__calculate_loss_hinge_loss():
+    X = [[0], [1]]
+    y = [-1, 1]
+    est = svm.LinearSVC(random_state=0)
+    est.fit(X, y)
+    pred_decision = est.decision_function([[-2], [3], [0.5]])
+    y_true = [-1, 1, 1]
+    expected = hinge_loss(y_true, pred_decision)
+    labels = [-1,1]
+    loss_function = 'hinge_loss'
+
+    actual = packages.iwal.iwal_functions._calculate_loss(y_true, pred_decision,labels,loss_function)
+    assert expected == actual
+
+
+def test__sum_losses_hinge_loss():
+    # example data set
+    X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
+    y = [1, 0]
+    lr = LogisticRegression().fit(X, y)
+
+    # example labeled set
+    s = [([[3, 1]], [1], 0.1),
+         ([[4, 1]], [0], 0.2), ]
+    labels = [0, 1]
+
+    expected = 0.0
+    for x, y, c in s:
+        df = lr.decision_function(x)
+        expected += c * hinge_loss(y, df, labels=labels)
+
+    loss_function = 'hinge_loss'
+    actual = packages.iwal.iwal_functions._sum_losses(lr, s, labels, loss_function)
+    assert actual == expected
+
+
+
+
+
+    #
+    # def test__get_min_hypothesis_empty_hypothesis_space():
+    #     hypothesis_space = []
+    #     s = {(1, 1, 0.5)}
+    #     labels = [0, 1]
+    #
+    #     min_h = packages.iwal.iwal_functions._get_min_hypothesis(hypothesis_space, s, log_loss, labels)
+    #     if min_h is None:
+    #         assert True
+    #     else:
+    #         assert False
+    #
+    #
+    # def test__get_min_hypothesis_empty_set():
+    #     # example data set
+    #     X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
+    #     y = [1, 0]
+    #
+    #     lr = LogisticRegression().fit(X, y)
+    #     hypothesis_space = [lr]
+    #     s = set()
+    #     labels = [0, 1]
+    #
+    #     min_h = packages.iwal.iwal_functions._get_min_hypothesis(hypothesis_space, s, log_loss, labels)
+    #     if min_h is lr:
+    #         assert True
+    #     else:
+    #         assert False
+    #
+    #
+    # def test__get_min_hypothesis_one_hypothesis():
+    #     # example data set
+    #     X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
+    #     y = [1, 0]
+    #     lr = LogisticRegression().fit(X, y)
+    #     hypothesis_space = [lr]
+    #
+    #     # example labeled set
+    #     x_t = [[3, 1]]
+    #     y_t = [1]
+    #     c_t = 0.1
+    #     s = [(x_t, y_t, c_t)]
+    #
+    #     labels_t = [0, 1]
+    #
+    #     min_h = packages.iwal.iwal_functions._get_min_hypothesis(hypothesis_space, s, log_loss, labels_t)
+    #     if min_h is lr:
+    #         assert True
+    #     else:
+    #         assert False
+    #
+    #
+
+    #
+    #
+    # def test_iwal_query_selected_for_labeling():
+    #     # example data set
+    #     X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
+    #     y = [1, 0]
+    #     lr = LogisticRegression().fit(X, y)
+    #     hypothesis_space = [lr]
+    #
+    #     # example labeled set
+    #     x_t = np.asarray([3, 1]).reshape(1, -1)  # single element with 2 features
+    #     y_t = np.asarray([1])
+    #     selected = []
+    #
+    #     # dummy function for testing
+    #     def rejection_func(x_t, history):
+    #         return 1.0
+    #
+    #     # define dummy loss function for testing purposes
+    #     def loss_func(a, b, labels):
+    #         l = labels
+    #         return a
+    #
+    #     history = {
+    #         'X': [],
+    #         'y': [],
+    #         'c': [],
+    #         'Q': []
+    #     }
+    #
+    #     labels_t = [0, 1]
+    #
+    #     h_t = packages.iwal.iwal_functions.iwal_query(x_t, y_t, selected, rejection_func, history, hypothesis_space,
+    #                                                   loss_func, labels_t)
+    #
+    #     assert len(selected) == 1
+    #     if h_t is lr:
+    #         assert True
+    #     else:
+    #         assert False
+    #
+    #
+    # def test_iwal_query_not_selected_for_labeling():
+    #     # example data set
+    #     X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
+    #     y = [1, 0]
+    #     lr = LogisticRegression().fit(X, y)
+    #     hypothesis_space = [lr]
+    #
+    #     # example labeled set
+    #     x_t = np.asarray([3, 1]).reshape(1, -1)  # single element with 2 features
+    #     y_t = np.asarray([1])
+    #     selected = []
+    #
+    #     # dummy function for testing
+    #     def rejection_func(x_t, history):
+    #         return 0.0
+    #
+    #     # define dummy loss function for testing purposes
+    #     def loss_func(a, b, labels):
+    #         l = labels
+    #         return a + b
+    #
+    #     history = {
+    #         'X': [],
+    #         'y': [],
+    #         'c': [],
+    #         'Q': []
+    #     }
+    #
+    #     labels_t = [0, 1]
+    #
+    #     h_t = packages.iwal.iwal_functions.iwal_query(x_t, y_t, selected, rejection_func, history, hypothesis_space,
+    #                                                   loss_func, labels_t)
+    #
+    #     assert len(selected) == 0
+    #     if h_t is lr:
+    #         assert True
+    #     else:
+    #         assert False
+    #
+    #
+
+    # selected = [([[-2]],[-1],0.1),
+    #             ([[3]],[1],0.5),
+    #             ([[0.5]],[1],0.25)]

@@ -28,70 +28,6 @@ def _append_history(history: dict, x_t: np.ndarray, y_t: np.ndarray, p_t: float,
         raise ValueError('history dictionary does not contain the required keys: X,y,c,Q')
 
 
-#
-# #?? predict_proba for log_loss vs pred_decision for hinge_loss
-# def _sum_losses(h, selected, loss, labels):
-#     """
-#     Sums losses over set of labeled elements.
-#
-#     Uses decision_function() for hinge_loss.
-#     Would require predict_proba for log_loss. Need to refactor to allow both.
-#     :param h:
-#     :param selected:
-#     :param loss:
-#     :param labels:
-#     :return:
-#     """
-#     total = 0
-#     for x, y_true, c in selected:
-#         # calculate loss for this sample
-#         y_predict = h.decision_function(x)
-#         curr_loss = loss(y_true, y_predict, labels=labels)
-#         iwal_loss = c * curr_loss
-#
-#         # update total
-#         total += iwal_loss
-#
-#     return total
-#
-#
-# # ?? difference between loss function L() vs l()
-# def _get_min_hypothesis(hypothesis_space, selected, loss, labels):
-#     """
-#     Calculates the minimum hypothesis in the hypothesis space, given a set of labeled samples with weights. Minimum is
-#     defined using the following formula:
-#
-#     h_t = argmin_{h in H} SUM_{x,y,c in S} c * l(h(x),y)
-#
-#     :param hypothesis_space:
-#     :param selected:
-#     :param loss:
-#     :param labels:
-#     :return:
-#     """
-#     min_loss = 10000
-#     min_h = None
-#
-#     # consider each model in hypothesis space
-#     for i in range(len(hypothesis_space)):
-#
-#         # sum losses over all labeled elements
-#         h = hypothesis_space[i]
-#         curr_loss = _sum_losses(h, selected, loss, labels)
-#
-#         # update minimum loss
-#         if curr_loss < min_loss:
-#             min_loss = curr_loss
-#             min_h = hypothesis_space[i]
-#
-#     return min_h
-#
-# def iwal_query(x_t, y_t, hypothesis_space, history, selected, rejection_threshold):
-#     pass
-#
-#
-
-
 def _loss_difference_hinge_loss(y_true: np.ndarray, pred_decision_a: np.ndarray, pred_decision_b: np.ndarray,
                                 labels: list) -> float:
     """
@@ -121,16 +57,12 @@ def _loss_difference(y_true: np.ndarray, y_pred_a: np.ndarray, y_pred_b: np.ndar
     :param loss_function:
     :return:
     """
-    print('_loss_difference()')
-    print(y_true)
-    print(y_pred_a)
-    print(y_pred_b)
-
     if loss_function == 'hinge_loss':
-        return _loss_difference_hinge_loss(y_true, y_pred_a, y_pred_b, labels)
+        diff = _loss_difference_hinge_loss(y_true, y_pred_a, y_pred_b, labels)
     else:
         raise NotImplementedError('Function does not support loss_function: ' + loss_function)
 
+    return diff
 
 def _bootstrap_probability(p_min: float, max_loss_difference: float) -> float:
     """
@@ -154,13 +86,14 @@ def _get_prediction(x: np.ndarray, h: Any, loss_function: str) -> np.ndarray:
     :param loss_function:
     :return:
     """
-
     if loss_function == 'hinge_loss':
-        return h.decision_function(x)
+        pred= h.decision_function(x)
     elif loss_function == 'log_loss':
-        return h.predict_proba(x)
+        pred= h.predict_proba(x)
     else:
         raise NotImplementedError('Function does not support loss_function: ' + loss_function)
+
+    return pred
 
 
 # ?? what loss function to use? don't use loss parameter defined in the parameters
@@ -191,19 +124,13 @@ def _bootstrap(x: np.ndarray, hypothesis_space: list, labels: list, p_min: float
                 # based on loss_function, get appropriate prediction to calculate loss
                 h_i = hypothesis_space[i]
                 h_j = hypothesis_space[j]
-                print(i,j,label)
-                print(type(h_i))
-                print(type(h_j))
-
                 y_pred_i = _get_prediction(x, h_i, loss_function)
                 y_pred_j = _get_prediction(x, h_j, loss_function)
-                print(y_pred_i)
-                print(y_pred_j)
 
                 # calculate loss difference between models
                 y_true = np.full(shape=len(x), fill_value=label, dtype=np.int)
-                diff = _loss_difference(y_true, y_pred_i, y_pred_j, labels, loss_function)
-                print(diff)
+                diff = _loss_difference(y_true, y_pred_i, y_pred_j, labels, loss_function)  # revisit later
+
                 # update max
                 if diff > max_diff:
                     max_diff = diff
@@ -213,32 +140,125 @@ def _bootstrap(x: np.ndarray, hypothesis_space: list, labels: list, p_min: float
     return p_t
 
 
-#
-# # ?? how to choose Q_t? use Bernoulli distribution?
-# # ?? no y_t in parameters but listed in documentation
-# # ?? no S in parameters but is in paper
-# # ?? confirm h is list of models? Algorithm 1 requires argmin over all h in H...
-# def iwal_query_bootstrap(x_t:np.ndarray, y_t:np.ndarray,  hypothesis_space: list, history: dict, selected: list, loss: Any, labels: list, p_min: float=0.1 ) -> Any:
-#     """
-#
-#     :param x_t:
-#     :param y_t:
-#     :param hypothesis_space:
-#     :param history:
-#     :param selected:
-#     :param loss:
-#     :param labels:
-#     :return:
-#     """
-#     # derive probability of requesting label for x_t
-#     p_t = None
+def _calculate_loss(y_true: np.ndarray, y_pred: np.ndarray, labels: list, loss_function: str) -> float:
+    """
+    Calculates loss for a given prediction using given loss_function.
+    :param y_true:
+    :param y_pred:
+    :param labels:
+    :param loss_function:
+    :return:
+    """
+    if loss_function == 'hinge_loss':
+        loss = hinge_loss(y_true, y_pred, labels=labels)
+    elif loss_function == 'log_loss':
+        loss = log_loss(y_true, y_pred, labels=labels)
+    else:
+        raise NotImplementedError('Function does not support loss_function: ' + loss_function)
 
+    return loss
+
+
+# ?? all at once?
+#?? sum hinge loss per sample, or need to use all samples at once?
+#?? predict_proba for log_loss vs pred_decision for hinge_loss
+def _sum_losses(h: Any, selected: list, labels: list, loss_function: str) -> float:
+    """
+    Sums losses over set of labeled elements.
+
+    :param h:
+    :param selected:
+    :param labels:
+    :param loss_function:
+    :return:
+    """
+    total = 0.0
+    for x, y_true, c in selected:
+
+        # calculate loss for this sample
+        y_predict = _get_prediction(x, h, loss_function)
+        curr_loss = _calculate_loss(y_true, y_predict, labels, loss_function)
+        weighted_loss = c * curr_loss
+
+        # update total
+        total += weighted_loss
+
+    return total
+
+
+# ?? difference between loss function L() vs l()
+def _get_min_hypothesis(hypothesis_space: list, selected: list, labels: list, loss_function: str) -> Any:
+
+    min_loss = 10000
+    min_h = None
+
+    # consider each model in hypothesis space
+    for i in range(len(hypothesis_space)):
+
+        # sum losses over all labeled elements
+        h = hypothesis_space[i]
+        curr_loss = _sum_losses(h, selected, labels, loss_function)
+
+        # update minimum loss
+        if curr_loss < min_loss:
+            min_loss = curr_loss
+            min_h = h
+
+    return min_h
+
+
+# ?? how to choose Q_t? use Bernoulli distribution?
+# ?? no y_t in parameters but listed in documentation
+# ?? no S in parameters but is in paper
+# ?? confirm h is list of models? Algorithm 1 requires argmin over all h in H...
+def iwal_query_bootstrap(x_t:np.ndarray, y_t:np.ndarray,  hypothesis_space: list, history: dict, selected: list, labels: list, loss_function: str='hinge_loss',p_min: float=0.1 ) -> Any:
+    """
+    This function implements Algorithm 1 IWAL (subroutine rejection-threshold) from the paper by Beygelzimer et al and
+    uses the bootstrap subroutine defined in 7.2. Bootstrap instantiation of IWAL. See
+    https://arxiv.org/pdf/0812.4952.pdf.
+
+    :param x_t:
+    :param y_t:
+    :param hypothesis_space:
+    :param history:
+    :param selected:
+    :param labels:
+    :param loss_function:
+    :param p_min:
+    :return:
+    """
+    # calculate probability of requesting label for x_t
+    p_t = _bootstrap(x_t, hypothesis_space, labels, p_min, loss_function)
+
+    # flip a coin using derived probability
+    Q_t = bernoulli.rvs(p_t)
+
+    # save query in history
+    _append_history(history, x_t, y_t, p_t, Q_t)
+
+    # choose actions based on flip
+    if Q_t == 1:  # label is requested
+        c_t = 1.0 / p_t
+        selected.append((x_t, y_t, c_t))  # add to set of selected samples
+
+    # select model with least loss
+    h_t = _get_min_hypothesis(hypothesis_space, selected, labels, loss_function)
+
+    return h_t
+
+
+
+#
+#
+# """
+#     Calculates the minimum hypothesis in the hypothesis space, given a set of labeled samples with weights. Minimum is
+#     defined using the following formula:
+#
+#     h_t = argmin_{h in H} SUM_{x,y,c in S} c * l(h(x),y)
+#     """
 
 # def iwal_query(x_t, y_t, selected, rejection_threshold, history, hypothesis_space, loss, labels, **additional):
 #     """
-#     This function implements Algorithm 1 IWAL (subroutine rejection-threshold) from the paper by Beygelzimer et al. See
-#     https://arxiv.org/pdf/0812.4952.pdf.
-#
 #     :param loss: Python function which calculates loss for a given hypothesis.
 #     :param labels: List of possible labels for the data set.
 #     :param x_t: Sample currently being considered for labelling.
@@ -256,35 +276,3 @@ def _bootstrap(x: np.ndarray, hypothesis_space: list, labels: list, p_min: float
 #     :param additional: Dictionary of arbitrary arguments that may be required by rejection_threshold().
 #     :return: Instance (scikit-learn model) of hypothesis space that is optimal at current time step.
 #     """
-#
-#
-#     if additional:
-#         p_t = rejection_threshold(x_t, history, additional['kwargs'])  # pass additional arguments
-#     else:
-#         p_t = rejection_threshold(x_t, history)
-#
-#     # flip a coin using derived probability
-#     Q_t = bernoulli.rvs(p_t)
-#
-#     # save query in history
-#     _append_history(history, x_t, y_t, p_t, Q_t)
-#
-#     # choose actions based on flip
-#     if Q_t == 1:  # label is requested
-#         c_t = 1.0 / p_t
-#         selected.append((x_t, y_t, c_t))  # add to set of selected samples
-#
-#     # select model with least loss
-#     h_t = _get_min_hypothesis(hypothesis_space, selected, loss, labels)
-#
-#     return h_t
-#
-#
-
-#
-#
-
-#
-#
-
-
