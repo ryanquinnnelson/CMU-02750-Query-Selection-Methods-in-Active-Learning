@@ -18,7 +18,11 @@ def _loss_difference_hinge_loss(y_true: np.ndarray, pred_decision_a: np.ndarray,
     """
     loss_a = hinge_loss(y_true, pred_decision_a, labels=labels)
     loss_b = hinge_loss(y_true, pred_decision_b, labels=labels)
-
+    # print('\nloss difference--------------------')
+    # print('y_true', y_true)
+    # print(pred_decision_a, 'loss',loss_a)
+    # print(pred_decision_b, 'loss',loss_b)
+    # print('loss difference is:', loss_a - loss_b)
     return loss_a - loss_b
 
 
@@ -61,6 +65,7 @@ def _bootstrap_probability(p_min: float, max_loss_difference: float) -> float:
 # ?? what to return if hypothesis space or labels are empty
 # ?? how to know it is working correctly
 # ?? can p_t be greater than 1?
+# ?? can I skip i == j
 def _bootstrap(x: np.ndarray, hypothesis_space: list, labels: list, p_min: float, loss_function: str) -> float:
     """
     This function implements the bootstrap rejection threshold subroutine defined in 7.2. Bootstrap instantiation of
@@ -92,12 +97,20 @@ def _bootstrap(x: np.ndarray, hypothesis_space: list, labels: list, p_min: float
                 # calculate loss difference between models
                 y_true = np.full(shape=len(x), fill_value=label, dtype=np.int)
                 diff = _loss_difference(y_true, y_pred_i, y_pred_j, labels, loss_function)  # revisit
-
+                # if i != j and diff == 0.0:
+                #     print('_bootstrap()')
+                #     print(i, j, diff)
+                #     print('x:',x)
+                #     print(h_i.intercept_, h_i.coef_, y_pred_i)
+                #     print(type(y_pred_i))
+                #     print(y_pred_i.shape)
+                #     print(h_j.intercept_, h_j.coef_, y_pred_j)
                 # update max
                 if diff > max_diff:
                     max_diff = diff
 
     # calculate rejection threshold probability
+    # print('====================max_diff:',max_diff)
     p_t = _bootstrap_probability(p_min, max_diff)
     return p_t
 
@@ -168,6 +181,7 @@ def _get_prediction(x: np.ndarray, h: Any, loss_function: str) -> np.ndarray:
 
 
 # done
+# ?? what to do if selected is empty
 def _sum_losses(h: Any, selected: list, labels: list, loss_function: str) -> float:
     """
     Sums losses over set of labeled elements.
@@ -179,7 +193,11 @@ def _sum_losses(h: Any, selected: list, labels: list, loss_function: str) -> flo
     :return:
     """
     total = 0.0
+    # print('sum_losses')
+    # print('selected size:', len(selected))
     for x, y_true, c in selected:
+        # print(x, y_true, c)
+
         # calculate loss for this sample
         y_predict = _get_prediction(x, h, loss_function)
         curr_loss = _calculate_loss(y_true, y_predict, labels, loss_function)
@@ -193,6 +211,7 @@ def _sum_losses(h: Any, selected: list, labels: list, loss_function: str) -> flo
 
 # done
 # ?? difference between loss function L() vs l()
+# ?? choosing the same model every time
 def _get_min_hypothesis(hypothesis_space: list, selected: list, labels: list, loss_function: str) -> Any:
     """
     Finds the min hypothesis h_t in the hypothesis space, given a set of labeled samples with weights. Minimum is
@@ -208,6 +227,7 @@ def _get_min_hypothesis(hypothesis_space: list, selected: list, labels: list, lo
     """
     min_loss = 10000
     min_h = None
+    # print('get_min_hypothesis------------------------------------')
 
     # consider each model in hypothesis space
     for i in range(len(hypothesis_space)):
@@ -215,12 +235,19 @@ def _get_min_hypothesis(hypothesis_space: list, selected: list, labels: list, lo
         # sum losses over all labeled elements
         h = hypothesis_space[i]
         curr_loss = _sum_losses(h, selected, labels, loss_function)
+        # print('\n')
+        # print('model',h.coef_, h.intercept_)
+        # print('min loss:', min_loss)
+        # print('current loss:', curr_loss)
 
         # update minimum loss
         if curr_loss < min_loss:
+            # print('update min loss!')
             min_loss = curr_loss
             min_h = h
+            # print('new optimal model!', min_h.coef_, min_h.intercept_)
 
+    # print('optimal model', min_h.coef_, min_h.intercept_)
     return min_h
 
 
@@ -242,6 +269,7 @@ def _choose_flip_action(flip: int, selected: list, x_t: np.ndarray, y_t: np.ndar
 
 
 # ?? how to choose Q_t? use Bernoulli distribution?
+# ?? what to do if p_t above 1.0?
 # ?? no y_t in parameters but listed in documentation
 # ?? no S in parameters but is in paper
 # ?? confirm h is list of models? Algorithm 1 requires argmin over all h in H...
@@ -264,6 +292,10 @@ def iwal_query_bootstrap(x_t: np.ndarray, y_t: np.ndarray, hypothesis_space: lis
     """
     # calculate probability of requesting label for x_t
     p_t = _bootstrap(x_t, hypothesis_space, labels, p_min, loss_function)
+
+    # temp
+    if p_t > 1:
+        p_t = 1
 
     # flip a coin using derived probability
     Q_t = bernoulli.rvs(p_t)

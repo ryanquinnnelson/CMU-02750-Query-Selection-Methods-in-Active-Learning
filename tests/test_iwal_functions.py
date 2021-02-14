@@ -370,39 +370,39 @@ def test__bootstrap_two_hypotheses():
     assert actual == expected
 
 
-# ?? confirm this is the correct output once loss function is better known
-# def test__iwal_query_bootstrap():
-#
-#     history = {
-#         'X': [],
-#         'y': [],
-#         'c': [],
-#         'Q': []
-#     }
-#
-#
-#     # example data set
-#     X1 = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
-#     y1 = [1, 0]
-#     lr1 = LogisticRegression().fit(X1, y1)
-#
-#     X2 = [[0, 0], [10, 10]]
-#     y2 = [1, 0]
-#     lr2 = LogisticRegression().fit(X2, y2)
-#
-#     H = [lr1, lr2]
-#     s = []
-#
-#     # example labeled set
-#     labels = [0, 1]
-#     p_min = 0.1
-#     loss_function = 'hinge_loss'
-#
-#     x3 = [[3, 1]]
-#     y3 = [1]
-#
-#     expected = lr1
-#
-#     actual = packages.iwal.iwal_functions.iwal_query_bootstrap(x3, y3, H, history, s, labels, loss_function, p_min)
-#
-#     assert actual == expected
+#?? confirm this is the correct output once loss function is better known
+def test__iwal_query_bootstrap():
+
+    history = {
+        'X': [],
+        'y': [],
+        'c': [],
+        'Q': []
+    }
+
+
+    # example data set
+    X1 = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
+    y1 = [1, 0]
+    lr1 = LogisticRegression().fit(X1, y1)
+
+    X2 = [[0, 0], [10, 10]]
+    y2 = [1, 0]
+    lr2 = LogisticRegression().fit(X2, y2)
+
+    H = [lr1, lr2]
+    s = []
+
+    # example labeled set
+    labels = [0, 1]
+    p_min = 0.1
+    loss_function = 'hinge_loss'
+
+    x3 = [[3, 1]]
+    y3 = [1]
+
+    expected = lr1
+
+    actual = packages.iwal.iwal_functions.iwal_query_bootstrap(x3, y3, H, history, s, labels, loss_function, p_min)
+
+    assert actual == expected
