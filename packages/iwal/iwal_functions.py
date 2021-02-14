@@ -60,6 +60,7 @@ def _bootstrap_probability(p_min: float, max_loss_difference: float) -> float:
 # ?? what loss function to use? don't use loss parameter defined in the parameters
 # ?? what to return if hypothesis space or labels are empty
 # ?? how to know it is working correctly
+# ?? can p_t be greater than 1?
 def _bootstrap(x: np.ndarray, hypothesis_space: list, labels: list, p_min: float, loss_function: str) -> float:
     """
     This function implements the bootstrap rejection threshold subroutine defined in 7.2. Bootstrap instantiation of
@@ -90,7 +91,7 @@ def _bootstrap(x: np.ndarray, hypothesis_space: list, labels: list, p_min: float
 
                 # calculate loss difference between models
                 y_true = np.full(shape=len(x), fill_value=label, dtype=np.int)
-                diff = _loss_difference(y_true, y_pred_i, y_pred_j, labels, loss_function)  # revisit later
+                diff = _loss_difference(y_true, y_pred_i, y_pred_j, labels, loss_function)  # revisit
 
                 # update max
                 if diff > max_diff:
@@ -193,6 +194,18 @@ def _sum_losses(h: Any, selected: list, labels: list, loss_function: str) -> flo
 # done
 # ?? difference between loss function L() vs l()
 def _get_min_hypothesis(hypothesis_space: list, selected: list, labels: list, loss_function: str) -> Any:
+    """
+    Finds the min hypothesis h_t in the hypothesis space, given a set of labeled samples with weights. Minimum is
+    defined using the following formula:
+
+    h_t = argmin_{h in H} SUM_{x,y,c in S} c * l(h(x),y)
+
+    :param hypothesis_space:
+    :param selected:
+    :param labels:
+    :param loss_function:
+    :return:
+    """
     min_loss = 10000
     min_h = None
 
@@ -212,7 +225,7 @@ def _get_min_hypothesis(hypothesis_space: list, selected: list, labels: list, lo
 
 
 # done
-def _choose_flip_action(flip: int, selected: list, x_t:np.ndarray, y_t:np.ndarray, p_t:float) -> None:
+def _choose_flip_action(flip: int, selected: list, x_t: np.ndarray, y_t: np.ndarray, p_t: float) -> None:
     """
     Takes an action depending on the outcome of a coin flip, where 1 indicates label is requested.
     :param flip:
@@ -266,15 +279,7 @@ def iwal_query_bootstrap(x_t: np.ndarray, y_t: np.ndarray, hypothesis_space: lis
 
     return h_t
 
-
-# """
-#     Calculates the minimum hypothesis in the hypothesis space, given a set of labeled samples with weights. Minimum is
-#     defined using the following formula:
-#
-#     h_t = argmin_{h in H} SUM_{x,y,c in S} c * l(h(x),y)
-#     """
-
-# def iwal_query(x_t, y_t, selected, rejection_threshold, history, hypothesis_space, loss, labels, **additional):
+# to be added to documentation for iwal_query()
 #     """
 #     :param loss: Python function which calculates loss for a given hypothesis.
 #     :param labels: List of possible labels for the data set.

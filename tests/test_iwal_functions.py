@@ -168,24 +168,6 @@ def test__get_prediction_not_implemented():
         packages.iwal.iwal_functions._get_prediction(x, lr, 'other')
 
 
-def test_bootstrap_two_hypotheses():
-    X = [[0], [1]]
-    y = [-1, 1]
-    sv = svm.LinearSVC(random_state=0)
-    sv.fit(X, y)
-
-    lr = LogisticRegression()
-    lr.fit(X, y)
-
-    H = [sv,lr]
-    x= [[-2]]
-    labels = [0, 1]
-    loss_function = 'hinge_loss'
-    p_min = 0.1
-
-    packages.iwal.iwal_functions._bootstrap(x, H, labels, p_min,loss_function)
-
-
 def test__calculate_loss_hinge_loss():
     X = [[0], [1]]
     y = [-1, 1]
@@ -355,3 +337,34 @@ def get__choose_flip_action_tails():
     # selected = [([[-2]],[-1],0.1),
     #             ([[3]],[1],0.5),
     #             ([[0.5]],[1],0.25)]
+
+
+def test__bootstrap_two_hypotheses():
+    # example data set
+    X1 = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
+    y1 = [1, 0]
+    lr1 = LogisticRegression().fit(X1, y1)
+
+    X2 = [[0, 0], [10, 10]]
+    y2 = [1, 0]
+    lr2 = LogisticRegression().fit(X2, y2)
+
+    H = [lr1, lr2]
+
+    # example labeled set
+    labels = [0, 1]
+    p_min = 0.1
+    loss_function = 'hinge_loss'
+
+    x3 = [[3, 1]]
+    y3 = [1]
+
+    df1 = lr1.decision_function(x3)
+    df2 = lr2.decision_function(x3)
+
+    hl1 = hinge_loss(y3, df1, labels=labels)
+    hl2 = hinge_loss(y3, df2, labels=labels)
+    expected = p_min + (1 - p_min) * (hl2 - hl1)
+
+    actual = packages.iwal.iwal_functions._bootstrap(x3, H, labels, p_min,loss_function)
+    assert actual == expected
