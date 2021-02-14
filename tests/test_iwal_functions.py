@@ -83,8 +83,8 @@ def test__sum_losses():
     lr = LogisticRegression().fit(X, y)
 
     # example labeled set
-    x_t = [[3, 1]]
-    y_t = [1]
+    x_t = np.asarray([3, 1]).reshape(1, -1)  # single element with 2 features
+    y_t = np.asarray([1])
     c_t = 0.1
     s = [(x_t, y_t, c_t)]
 
