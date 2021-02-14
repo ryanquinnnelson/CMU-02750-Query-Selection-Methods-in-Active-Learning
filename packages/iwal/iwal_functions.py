@@ -86,7 +86,7 @@ def _get_min_hypothesis(hypothesis_space, selected, loss, labels):
 # ?? no y_t in parameters but listed in documentation
 # ?? no S in parameters but is in paper
 # ?? confirm h is list of models? Algorithm 1 requires argmin over all h in H...
-def iwal_query(x_t, y_t, selected, rejection_threshold, history, hypothesis_space, loss, labels, **kwargs):
+def iwal_query(x_t, y_t, selected, rejection_threshold, history, hypothesis_space, loss, labels, **additional):
     """
     This function implements Algorithm 1 IWAL (subroutine rejection-threshold) from the paper by Beygelzimer et al. See
     https://arxiv.org/pdf/0812.4952.pdf.
@@ -105,13 +105,13 @@ def iwal_query(x_t, y_t, selected, rejection_threshold, history, hypothesis_spac
             p -- rejection probabilities matching to data points
             Q -- coin flips matching to data points
     :param hypothesis_space: A list of scikit-learn models (i.e. sklearn.linear_model.LogisticRegression)
-    :param kwargs: Dictionary of arbitrary arguments that may be required by rejection_threshold().
+    :param additional: Dictionary of arbitrary arguments that may be required by rejection_threshold().
     :return: Instance (scikit-learn model) of hypothesis space that is optimal at current time step.
     """
 
     # derive probability of requesting label for x_t
-    if kwargs:
-        p_t = rejection_threshold(x_t, history, kwargs)  # pass additional arguments
+    if additional:
+        p_t = rejection_threshold(x_t, history, additional['kwargs'])  # pass additional arguments
     else:
         p_t = rejection_threshold(x_t, history)
 
@@ -177,7 +177,6 @@ def bootstrap(x, history, additional_args):
     :param additional_args:
     :return:
     """
-
     # set additional arguments
     hypothesis_space = additional_args['H']
     loss = additional_args['loss']
