@@ -61,6 +61,26 @@ def _bootstrap_probability(p_min: float, max_loss_difference: float) -> float:
     return p_min + (1 - p_min) * max_loss_difference
 
 
+# # ?? we can't use this to find p_t because the expression contains p_t
+# def _importance_weighted_loss_estimate(h:Any, history:dict, labels:list, loss_function:str):
+#
+#     total = 0.0
+#
+#     T = len(history['X'])
+#     for t in range(T):
+#         x_t = history['X'][t]
+#         y_t = history['y'][t]
+#         p_t = history['c'][t]
+#         Q_t = history['Q'][t]
+#
+#         y_pred = _get_prediction(x_t,h, loss_function)
+#         loss_estimate = _calculate_loss(y_t, y_pred, labels, loss_function)
+#         iwe = (Q_t/p_t) * loss_estimate
+#         total += iwe
+#
+#     return (1/T) * total
+
+
 # ?? what loss function to use? don't use loss parameter defined in the parameters
 # ?? what to return if hypothesis space or labels are empty
 # ?? how to know it is working correctly
