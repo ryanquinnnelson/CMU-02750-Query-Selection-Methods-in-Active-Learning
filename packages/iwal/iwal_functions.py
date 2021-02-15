@@ -61,31 +61,12 @@ def _bootstrap_probability(p_min: float, max_loss_difference: float) -> float:
     return p_min + (1 - p_min) * max_loss_difference
 
 
-# # ?? we can't use this to find p_t because the expression contains p_t
-# def _importance_weighted_loss_estimate(h:Any, history:dict, labels:list, loss_function:str):
-#
-#     total = 0.0
-#
-#     T = len(history['X'])
-#     for t in range(T):
-#         x_t = history['X'][t]
-#         y_t = history['y'][t]
-#         p_t = history['c'][t]
-#         Q_t = history['Q'][t]
-#
-#         y_pred = _get_prediction(x_t,h, loss_function)
-#         loss_estimate = _calculate_loss(y_t, y_pred, labels, loss_function)
-#         iwe = (Q_t/p_t) * loss_estimate
-#         total += iwe
-#
-#     return (1/T) * total
-
-
-# ?? what loss function to use? don't use loss parameter defined in the parameters
-# ?? what to return if hypothesis space or labels are empty
-# ?? how to know it is working correctly
+# ?? what loss function to use? difference between loss function L() vs l()
+# minor questions:
 # ?? can p_t be greater than 1? should I be normalizing?
-# ?? can I skip i == j
+# ?? can I skip i == j?
+# ?? what to return if hypothesis space or labels are empty?
+# ?? how to know it is working correctly?
 def _bootstrap(x: np.ndarray, hypothesis_space: list, labels: list, p_min: float, loss_function: str) -> float:
     """
     This function implements the bootstrap rejection threshold subroutine defined in 7.2. Bootstrap instantiation of
@@ -287,12 +268,12 @@ def _choose_flip_action(flip: int, selected: list, x_t: np.ndarray, y_t: np.ndar
         c_t = 1.0 / p_t
         selected.append((x_t, y_t, c_t))  # add to set of selected samples
 
-
-# ?? how to choose Q_t? use Bernoulli distribution?
-# ?? what to do if p_t above 1.0?
+# minor questions
 # ?? no y_t in parameters but listed in documentation
 # ?? no S in parameters but is in paper
 # ?? confirm h is list of models? Algorithm 1 requires argmin over all h in H...
+# ?? how to choose Q_t? use Bernoulli distribution?
+# ?? history vs selected set S
 def iwal_query_bootstrap(x_t: np.ndarray, y_t: np.ndarray, hypothesis_space: list, history: dict, selected: list,
                          labels: list, loss_function: str = 'hinge_loss', p_min: float = 0.1) -> Any:
     """
@@ -313,9 +294,9 @@ def iwal_query_bootstrap(x_t: np.ndarray, y_t: np.ndarray, hypothesis_space: lis
     # calculate probability of requesting label for x_t
     p_t = _bootstrap(x_t, hypothesis_space, labels, p_min, loss_function)
 
-    # temp
-    if p_t > 1:
-        p_t = 1
+    # # temp
+    # if p_t > 1:
+    #     p_t = 1
 
     # flip a coin using derived probability
     Q_t = bernoulli.rvs(p_t)
@@ -350,3 +331,22 @@ def iwal_query_bootstrap(x_t: np.ndarray, y_t: np.ndarray, hypothesis_space: lis
 #     :param additional: Dictionary of arbitrary arguments that may be required by rejection_threshold().
 #     :return: Instance (scikit-learn model) of hypothesis space that is optimal at current time step.
 #     """
+
+# # ?? we can't use this to find p_t because the expression contains p_t
+# def _importance_weighted_loss_estimate(h:Any, history:dict, labels:list, loss_function:str):
+#
+#     total = 0.0
+#
+#     T = len(history['X'])
+#     for t in range(T):
+#         x_t = history['X'][t]
+#         y_t = history['y'][t]
+#         p_t = history['c'][t]
+#         Q_t = history['Q'][t]
+#
+#         y_pred = _get_prediction(x_t,h, loss_function)
+#         loss_estimate = _calculate_loss(y_t, y_pred, labels, loss_function)
+#         iwe = (Q_t/p_t) * loss_estimate
+#         total += iwe
+#
+#     return (1/T) * total
