@@ -110,8 +110,8 @@ def iwal_query(x_t: np.ndarray,
                rejection_threshold: str,
                bootstrap_size: int,
                p_min: float = 0.1) -> Any:
-    # calculate the number of the current iteration
-    t = len(history['X']) + 1
+    # calculate the current size of history
+    history_size = len(history['X'])
 
     # calculate probability of requesting label for x_t
     if rejection_threshold == 'bootstrap':
@@ -129,8 +129,8 @@ def iwal_query(x_t: np.ndarray,
     _choose_flip_action(Q_t, selected, x_t, y_t, p_t, p_min)
 
     # select model with least loss
-    if rejection_threshold == 'bootstrap' and t - 1 < bootstrap_size:
-        h_t = None  # test models once bootstrapping process is done
+    if rejection_threshold == 'bootstrap' and history_size < bootstrap_size:  # bootstrapping in progress
+        h_t = None  # min hypothesis can only be calculated after bootstrapping is complete
     else:
         h_t = _get_min_hypothesis(hypothesis_space, selected, labels, _loss_summation_function)
 
