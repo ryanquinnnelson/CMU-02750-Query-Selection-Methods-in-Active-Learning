@@ -68,6 +68,7 @@ def _bootstrap_reshape_history(history):
 
 
 # done, tested
+# ?? need to train models on different data? otherwise, get same fit for every model
 def _bootstrap_train_predictors(hypothesis_space, history):
     X, y = _bootstrap_reshape_history(history)  # entire history so far consists of selected samples
 
