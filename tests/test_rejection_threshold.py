@@ -20,11 +20,11 @@ def test__bootstrap_calculate_max_loss_difference():
     """
 
     x = 1
-    h_space = [2,3,4]
-    labels = [0,1]
+    h_space = [2, 3, 4]
+    labels = [0, 1]
 
     def test_loss_difference_function(x, h_i, h_j, label, label_list):
-        return (x*h_i) - (x*h_j) + label
+        return (x * h_i) - (x * h_j) + label
 
     expected = 3
     actual = rt._bootstrap_calculate_max_loss_difference(x, h_space, labels, test_loss_difference_function)
@@ -32,7 +32,6 @@ def test__bootstrap_calculate_max_loss_difference():
 
 
 def test__bootstrap_ldf_hinge():
-
     # example data set
     X1 = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
     y1 = [1, 0]
@@ -55,19 +54,23 @@ def test__bootstrap_ldf_hinge():
     hl2 = hinge_loss(y3, df2, labels=labels)
     expected = hl1 - hl2
 
-    actual = rt._bootstrap_ldf_hinge(x3,lr1,lr2,y3,labels)
+    actual = rt._bootstrap_ldf_hinge(x3, lr1, lr2, y3, labels)
     assert actual == expected
 
 
 def test__bootstrap_reshape_history():
+    x1 = np.asarray([[2.59193175, 1.14706863]])
+    x2 = np.asarray([[1.7756532, 1.15670278]])
+    X_before = [x1, x2]
 
-    X_before = [np.asarray([2.59193175, 1.14706863]), np.asarray([1.7756532, 1.15670278])]
-    y_before = [np.asarray([1]), np.asarray([0])]
-    history = {'X': X_before,'y':y_before}
-    X_after,y_after = rt._bootstrap_reshape_history(history)
-    assert X_after.shape == (2,2)
+    y1 = np.asarray([1])
+    y2 = np.asarray([0])
+    y_before = [y1, y2]
+    history = {'X': X_before, 'y': y_before}
+    X_after, y_after = rt._bootstrap_reshape_history(history)
+
+    assert X_after.shape == (2, 2)
     assert y_after.shape == (2,)
-
 
 
 def test__bootstrap_train_predictors():
@@ -82,9 +85,14 @@ def test__bootstrap_train_predictors():
         lr = LogisticRegression()
         h_space.append(lr)
 
-    X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
-    y = [1, 0]
-    history = {'X':X,'y':y}
+    x1 = np.asarray([[2.59193175, 1.14706863]])
+    x2 = np.asarray([[1.7756532, 1.15670278]])
+    X_before = [x1, x2]
+
+    y1 = np.asarray([1])
+    y2 = np.asarray([0])
+    y_before = [y1, y2]
+    history = {'X': X_before, 'y': y_before}
 
     rt._bootstrap_train_predictors(h_space, history)
 
@@ -97,7 +105,7 @@ def test__bootstrap_train_predictors():
 
 
 def test_bootstrap_t_less_than_bootstrap_size():
-    history = {'X':[]}
+    history = {'X': []}
     b = 2
 
     h_space = []
@@ -106,7 +114,7 @@ def test_bootstrap_t_less_than_bootstrap_size():
         h_space.append(lr)
 
     expected = 1.0
-    actual = rt.bootstrap(1,h_space,b,history,[0,1])
+    actual = rt.bootstrap(1, h_space, b, history, [0, 1])
     assert actual == expected
 
     # should raise error because models should not be trained
@@ -114,11 +122,15 @@ def test_bootstrap_t_less_than_bootstrap_size():
         for model in h_space:
             model.predict([[3, 1]])
 
-
 def test_bootstrap_t_equals_bootstrap_size():
-    X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
-    y = [1, 0]
-    history = {'X':X,'y':y}
+    x1 = np.asarray([[2.59193175, 1.14706863]])
+    x2 = np.asarray([[1.7756532, 1.15670278]])
+    X_before = [x1, x2]
+
+    y1 = np.asarray([1])
+    y2 = np.asarray([0])
+    y_before = [y1, y2]
+    history = {'X': X_before, 'y': y_before}
     b = 2
 
     h_space = []
@@ -135,4 +147,3 @@ def test_bootstrap_t_equals_bootstrap_size():
             model.predict([[3, 1]])
         except NotFittedError:
             assert False, 'Model has not been fitted.'
-
