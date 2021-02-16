@@ -41,6 +41,7 @@ def _bootstrap_calculate_max_loss_difference(x, hypothesis_space, labels, loss_d
 
 
 # done, tested
+# ?? how to standardize between 0 and 1
 # ?? l() vs L()
 def _bootstrap_ldf_hinge(x, h_i, h_j, label, labels):
     """
