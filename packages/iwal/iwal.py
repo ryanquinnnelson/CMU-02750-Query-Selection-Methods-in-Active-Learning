@@ -9,7 +9,7 @@ from scipy.stats import bernoulli
 from packages.iwal.helper import calculate_hinge_loss
 
 
-# done, testable
+# done, tested
 def _append_history(history: dict, x_t: np.ndarray, y_t: np.ndarray, p_t: float, q_t: int) -> None:
     """
     Adds given sample to given query history dictionary.
@@ -34,7 +34,7 @@ def _append_history(history: dict, x_t: np.ndarray, y_t: np.ndarray, p_t: float,
         raise ValueError('history dictionary does not contain the required keys: X,y,c,Q')
 
 
-# done, testable
+# done, tested
 def _choose_flip_action(flip: int, selected: list, x_t: np.ndarray, y_t: np.ndarray, p_t: float, p_min: float) -> None:
     """
     Takes an action depending on the outcome of a coin flip, where 1 indicates label is requested.
@@ -51,7 +51,7 @@ def _choose_flip_action(flip: int, selected: list, x_t: np.ndarray, y_t: np.ndar
         selected.append((x_t, y_t, c_t))  # add to set of selected samples
 
 
-# done, testable
+# done, tested
 # ?? difference between loss function L() vs l()
 def _loss_summation_function(h: Any, selected: list, labels: list) -> float:
     total = 0.0
@@ -64,7 +64,7 @@ def _loss_summation_function(h: Any, selected: list, labels: list) -> float:
     return total
 
 
-# done, testable
+# done, tested
 def _get_min_hypothesis(h_space: list, selected: list, labels: list, loss_summation_function: Any) -> Any:
     """
     Finds the min hypothesis h_t in the hypothesis space, given a set of labeled samples with weights. Minimum is
@@ -99,7 +99,7 @@ def _get_min_hypothesis(h_space: list, selected: list, labels: list, loss_summat
     return min_h
 
 
-# working
+# done, testable
 # ?? hinge_loss prefers {-1,1} for labels. Should we convert our labels to those?
 def iwal_query(x_t: np.ndarray,
                y_t: np.ndarray,
