@@ -96,16 +96,19 @@ def bootstrap(x_t, h_space, bootstrap_size, history, labels, p_min=0.1):
     :return:
     """
 
-    # determine current round of active learning
+    # select actions based on training size and bootstrap size
     training_size = len(history['X'])
+    if training_size <= bootstrap_size:
 
-    if training_size <= bootstrap_size:  # training set size is less than or equal to the bootstrap size
+        # sample will be used for training and should be added to selected set
         p_t = 1.0
 
         # consider whether to also train predictors on the initial sample
-        if training_size == bootstrap_size:  # training set size is equal to the bootstrap size
+        if training_size == bootstrap_size:
             _bootstrap_train_predictors(h_space, history)
+
     else:
+        # predictors can be used to calculate p_t
         max_loss = _bootstrap_calculate_max_loss_difference(x_t, h_space, labels, _bootstrap_ldf_hinge)
         p_t = _bootstrap_calculate_p_t(p_min, max_loss)
     return p_t
