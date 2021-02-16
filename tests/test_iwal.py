@@ -93,18 +93,17 @@ def test__get_min_hypothesis():
 
 
 def test_iwal_query_notimplemented():
-    history = {'X':[],'y':[],'c':[],'Q':[]}
+    history = {'X': [], 'y': [], 'c': [], 'Q': []}
     with pytest.raises(NotImplementedError):
         iw.iwal_query([[1]], [1], [], history, [], [], 'other', 1)
 
 
 def test_iwal_query_bootstrap_t_one_less_than_bootstrap_size():
-    history = {'X':[],'y':[],'c':[],'Q':[]}
-    bootstrap_size= 1
+    history = {'X': [], 'y': [], 'c': [], 'Q': []}
+    bootstrap_size = 1
     actual = iw.iwal_query([[3, 1]], [1], [], history, [], [], 'bootstrap', bootstrap_size)
     assert len(history['X']) == 1
     assert len(history['y']) == 1
     assert len(history['c']) == 1
     assert len(history['Q']) == 1
     assert actual is None
-

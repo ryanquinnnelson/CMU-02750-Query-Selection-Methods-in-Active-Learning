@@ -122,6 +122,7 @@ def test_bootstrap_t_less_than_bootstrap_size():
         for model in h_space:
             model.predict([[3, 1]])
 
+
 def test_bootstrap_t_equals_bootstrap_size():
     x1 = np.asarray([[2.59193175, 1.14706863]])
     x2 = np.asarray([[1.7756532, 1.15670278]])

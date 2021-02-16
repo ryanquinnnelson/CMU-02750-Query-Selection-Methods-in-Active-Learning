@@ -5,6 +5,7 @@ Beygelzimer et al. See https://arxiv.org/pdf/0812.4952.pdf.
 from packages.iwal.helper import calculate_hinge_loss
 import numpy as np
 
+
 # done, tested
 def _bootstrap_calculate_p_t(p_min, max_loss_difference):
     """
@@ -61,7 +62,6 @@ def _bootstrap_ldf_hinge(x, h_i, h_j, label, labels):
 
 # done, testable
 def _bootstrap_reshape_history(history):
-
     X = np.concatenate(history['X'], axis=0)
     y = np.concatenate(history['y'], axis=0)
     return X, y
@@ -69,7 +69,6 @@ def _bootstrap_reshape_history(history):
 
 # done, tested
 def _bootstrap_train_predictors(hypothesis_space, history):
-
     X, y = _bootstrap_reshape_history(history)  # entire history so far consists of selected samples
 
     for h in hypothesis_space:
@@ -97,13 +96,13 @@ def bootstrap(x_t, h_space, bootstrap_size, history, labels, p_min=0.1):
     """
 
     # determine current round of active learning
-    t = len(history['X'])+1  # empty history is round 1 because sample added to history after p_t calculated
+    t = len(history['X']) + 1  # empty history is round 1 because sample added to history after p_t calculated
 
-    if t-1 <= bootstrap_size:
+    if t - 1 <= bootstrap_size:
         p_t = 1.0
 
         # consider whether to also train predictors on the initial sample
-        if t-1 == bootstrap_size: # training set size is equal to the bootstrap size
+        if t - 1 == bootstrap_size:  # training set size is equal to the bootstrap size
             _bootstrap_train_predictors(h_space, history)
     else:
         max_loss = _bootstrap_calculate_max_loss_difference(x_t, h_space, labels, _bootstrap_ldf_hinge)
