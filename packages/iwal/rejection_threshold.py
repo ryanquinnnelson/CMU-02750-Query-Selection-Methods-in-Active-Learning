@@ -98,7 +98,7 @@ def bootstrap(x_t, h_space, bootstrap_size, history, labels, p_min=0.1):
     # determine current round of active learning
     t = len(history['X']) + 1  # empty history is round 1 because sample added to history after p_t calculated
 
-    if t - 1 <= bootstrap_size:
+    if t - 1 <= bootstrap_size:  # training set size is less than or equal to the bootstrap size
         p_t = 1.0
 
         # consider whether to also train predictors on the initial sample
@@ -107,5 +107,4 @@ def bootstrap(x_t, h_space, bootstrap_size, history, labels, p_min=0.1):
     else:
         max_loss = _bootstrap_calculate_max_loss_difference(x_t, h_space, labels, _bootstrap_ldf_hinge)
         p_t = _bootstrap_calculate_p_t(p_min, max_loss)
-
     return p_t
