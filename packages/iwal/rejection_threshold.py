@@ -76,6 +76,10 @@ def bootstrap(x_t, h_space, bootstrap_size, history, labels, p_min=0.1):
     This function implements Algorithm 3 from the paper by Beygelzimer et al. See https://arxiv.org/pdf/0812.4952.pdf.
     Calculates rejection threshold probability for unlabeled sample x_t. Uses hinge_loss for loss calculations.
 
+    Note on the comparison of t and bootstrap size: We want a training set of size equal to the bootstrap size when
+    we first train the predictors. If we desire a bootstrap_size=3, the set of samples in history has a size=3 at the
+    beginning of t=4, because calculating p_t occurs before sample is added for that round.
+
     :param x_t:
     :param h_space:
     :param bootstrap_size:
@@ -86,13 +90,13 @@ def bootstrap(x_t, h_space, bootstrap_size, history, labels, p_min=0.1):
     """
 
     # determine current round of active learning
-    t = len(history['X']) + 1  # zero length history indicates round 1
+    t = len(history['X'])+1  # empty history is round 1 because sample added to history after p_t calculated
 
-    if t <= bootstrap_size:
+    if t-1 <= bootstrap_size:
         p_t = 1.0
 
         # consider whether to also train predictors on the initial sample
-        if t == bootstrap_size:
+        if t-1 == bootstrap_size: # training set size is equal to the bootstrap size
             _bootstrap_train_predictors(h_space, history)
     else:
         max_loss = _bootstrap_calculate_max_loss_difference(x_t, h_space, labels, _bootstrap_ldf_hinge)

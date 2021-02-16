@@ -106,7 +106,7 @@ def test_bootstrap_t_equals_bootstrap_size():
     X = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
     y = [1, 0]
     history = {'X':X,'y':y}
-    b = 3
+    b = 2
 
     h_space = []
     for i in range(2):
