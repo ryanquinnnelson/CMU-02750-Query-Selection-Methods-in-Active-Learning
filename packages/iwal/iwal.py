@@ -65,7 +65,7 @@ def _loss_summation_function(h: Any, selected: list, labels: list) -> float:
 
 
 # done, tested
-def _get_min_hypothesis(h_space: list, selected: list, labels: list, loss_summation_function: Any) -> Any:
+def _get_min_hypothesis(hypothesis_space: list, selected: list, labels: list, loss_summation_function: Any) -> Any:
     """
     Finds the min hypothesis h_t in the hypothesis space, given a set of labeled samples with weights. Minimum is
     defined using the following formula:
@@ -74,7 +74,7 @@ def _get_min_hypothesis(h_space: list, selected: list, labels: list, loss_summat
 
     where H is the hypothesis space, S is the set of labeled samples, and l() is the loss_summation_function.
 
-    :param h_space:
+    :param hypothesis_space:
     :param selected:
     :param labels:
     :param loss_summation_function:
@@ -85,10 +85,10 @@ def _get_min_hypothesis(h_space: list, selected: list, labels: list, loss_summat
     min_h = None
 
     # consider each model in hypothesis space
-    for i in range(len(h_space)):
+    for i in range(len(hypothesis_space)):
 
         # sum losses over all labeled elements
-        h = h_space[i]
+        h = hypothesis_space[i]
         loss = loss_summation_function(h, selected, labels)
 
         # update minimum loss
@@ -103,16 +103,16 @@ def _get_min_hypothesis(h_space: list, selected: list, labels: list, loss_summat
 # ?? hinge_loss prefers {-1,1} for labels. Should we convert our labels to those?
 def iwal_query(x_t: np.ndarray,
                y_t: np.ndarray,
-               h_space: list,
+               hypothesis_space: list,
                history: dict,
                selected: list,
                labels: list,
                rejection_threshold: str,
-               b: int,
+               bootstrap_size: int,
                p_min: float = 0.1) -> Any:
     # calculate probability of requesting label for x_t
     if rejection_threshold == 'bootstrap':
-        p_t = rt.bootstrap(x_t, h_space, b, history, labels, p_min)
+        p_t = rt.bootstrap(x_t, hypothesis_space, bootstrap_size, history, labels, p_min)
     else:
         raise NotImplementedError('Function does not support rejection_threshold:', rejection_threshold)
 
@@ -126,6 +126,6 @@ def iwal_query(x_t: np.ndarray,
     _choose_flip_action(Q_t, selected, x_t, y_t, p_t, p_min)
 
     # select model with least loss
-    h_t = _get_min_hypothesis(h_space, selected, labels, _loss_summation_function)
+    h_t = _get_min_hypothesis(hypothesis_space, selected, labels, _loss_summation_function)
 
     return h_t

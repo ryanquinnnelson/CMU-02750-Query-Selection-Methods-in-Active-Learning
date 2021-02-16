@@ -1,4 +1,4 @@
-import packages.iwal.iwal
+import packages.iwal.iwal as iw
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import hinge_loss
 import numpy as np
@@ -18,7 +18,7 @@ def test_append_history_dictionary_matches():
     p_t = 0.5
     q_t = 1
 
-    packages.iwal.iwal._append_history(history, x_t, y_t, p_t, q_t)
+    iw._append_history(history, x_t, y_t, p_t, q_t)
 
     assert x_t in history['X']
     assert y_t in history['y']
@@ -33,7 +33,7 @@ def test__choose_flip_action_heads():
     p_t = 0.25
     p_min = 0.1
     Q_t = 1
-    packages.iwal.iwal._choose_flip_action(Q_t, s, x_t, y_t, p_t, p_min)
+    iw._choose_flip_action(Q_t, s, x_t, y_t, p_t, p_min)
     assert len(s) == 1
     c_t = s[0][2]
     assert c_t == p_min / p_t
@@ -46,7 +46,7 @@ def test__choose_flip_action_tails():
     p_t = 0.25
     p_min = 0.1
     Q_t = 0
-    packages.iwal.iwal._choose_flip_action(Q_t, s, x_t, y_t, p_t, p_min)
+    iw._choose_flip_action(Q_t, s, x_t, y_t, p_t, p_min)
     assert len(s) == 0
 
 
@@ -67,7 +67,7 @@ def test__loss_summation_function():
         df = lr.decision_function(x)
         expected += c * hinge_loss(y, df, labels=labels)
 
-    actual = packages.iwal.iwal._loss_summation_function(lr, s, labels)
+    actual = iw._loss_summation_function(lr, s, labels)
     assert actual == expected
 
 
@@ -88,10 +88,10 @@ def test__get_min_hypothesis():
             total += h * s
         return total
 
-    min_h = packages.iwal.iwal._get_min_hypothesis(h_space, selected, labels, test_loss_summation_function)
+    min_h = iw._get_min_hypothesis(h_space, selected, labels, test_loss_summation_function)
     assert min_h == 1
 
 
 def test_iwal_query_notimplemented():
     with pytest.raises(NotImplementedError):
-        packages.iwal.iwal.iwal_query([[1]], [1], [], dict(), [], [], 'other', 1)
+        iw.iwal_query([[1]], [1], [], dict(), [], [], 'other', 1)
