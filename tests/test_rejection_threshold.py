@@ -3,6 +3,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import hinge_loss
 from sklearn.exceptions import NotFittedError
 import pytest
+import numpy as np
+
 
 def test__bootstrap_calculate_p_t():
     p_min = 0.1
@@ -55,6 +57,17 @@ def test__bootstrap_ldf_hinge():
 
     actual = rt._bootstrap_ldf_hinge(x3,lr1,lr2,y3,labels)
     assert actual == expected
+
+
+def test__bootstrap_reshape_history():
+
+    X_before = [np.asarray([2.59193175, 1.14706863]), np.asarray([1.7756532, 1.15670278])]
+    y_before = [np.asarray([1]), np.asarray([0])]
+    history = {'X': X_before,'y':y_before}
+    X_after,y_after = rt._bootstrap_reshape_history(history)
+    assert X_after.shape == (2,2)
+    assert y_after.shape == (2,)
+
 
 
 def test__bootstrap_train_predictors():

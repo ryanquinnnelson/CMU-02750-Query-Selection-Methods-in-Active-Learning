@@ -3,7 +3,7 @@ Implements rejection-threshold functions for Importance Weighting Active Learnin
 Beygelzimer et al. See https://arxiv.org/pdf/0812.4952.pdf.
 """
 from packages.iwal.helper import calculate_hinge_loss
-
+import numpy as np
 
 # done, tested
 def _bootstrap_calculate_p_t(p_min, max_loss_difference):
@@ -59,11 +59,25 @@ def _bootstrap_ldf_hinge(x, h_i, h_j, label, labels):
     return loss_i - loss_j
 
 
+# done, testable
+def _bootstrap_reshape_history(history):
+
+    # reshape X
+    X_cols = len(history['X'][0])
+    X_rows = len(history['X'])
+    X = np.asarray(history['X']).reshape(X_rows, X_cols)
+
+    # reshape y
+    y_rows = len(history['y'])
+    y = np.asarray(history['y']).reshape(y_rows, )
+
+    return X, y
+
+
 # done, tested
 def _bootstrap_train_predictors(hypothesis_space, history):
 
-    X = history['X']  # entire history so far consists of selected samples
-    y = history['y']
+    X, y = _bootstrap_reshape_history(history)  # entire history so far consists of selected samples
 
     for h in hypothesis_space:
         h.fit(X, y)
