@@ -1,12 +1,12 @@
 """
-Implements Importance Weighting Active Learning algorithm from the paper by Beygelzimer et al.
+Implements Importance Weighting Active Learning (IWAL) algorithm from the paper by Beygelzimer et al.
 See https://arxiv.org/pdf/0812.4952.pdf.
 """
 from typing import Any
 import numpy as np
-import rejection_threshold as rt
+import packages.iwal.rejection_threshold as rt
 from scipy.stats import bernoulli
-from helper import calculate_hinge_loss
+from packages.iwal.helper import calculate_hinge_loss
 
 
 # done, testable

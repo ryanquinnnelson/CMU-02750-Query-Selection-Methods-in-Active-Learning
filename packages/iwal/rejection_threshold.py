@@ -1,7 +1,8 @@
 """
-Contains implementations of rejection-threshold functions for IWAL.
+Implements rejection-threshold functions for Importance Weighting Active Learning (IWAL) algorithm from the paper by
+Beygelzimer et al. See https://arxiv.org/pdf/0812.4952.pdf.
 """
-from helper import calculate_hinge_loss
+from packages.iwal.helper import calculate_hinge_loss
 
 
 # done, testable

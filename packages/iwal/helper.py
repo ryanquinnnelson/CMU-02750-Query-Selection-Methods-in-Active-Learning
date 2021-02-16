@@ -1,8 +1,11 @@
+"""
+Defines common functions shared throughout package.
+"""
 from sklearn.metrics import hinge_loss
 import numpy as np
 
 
-# done, testable
+# done, tested
 def calculate_hinge_loss(x, h, label, labels):
     y_true = np.full(shape=len(x), fill_value=label, dtype=np.int)
     pred_decision = h.decision_function(x)
