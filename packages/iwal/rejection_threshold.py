@@ -127,15 +127,15 @@ def _bootstrap_combine_p_min_and_max_loss(p_min, max_loss_difference):
 
 
 # done, testable
-def _bootstrap_calculate_p_t(x_t, h_space, labels, loss_function, p_min):
+def _bootstrap_calculate_p_t(x_t, h_space, labels, p_min, loss_function):
     """
     Calculates the rejection threshold probability p_t.
 
     :param x_t:
     :param h_space:
     :param labels:
-    :param loss_function:
     :param p_min:
+    :param loss_function:
     :return:
     """
 
@@ -204,7 +204,7 @@ def _bootstrap_train_predictors(h_space, history):
 
 
 # done, testable
-def bootstrap(x_t, h_space, bootstrap_size, history, labels, loss_function, p_min=0.1):
+def bootstrap(x_t, h_space, bootstrap_size, history, labels, loss_function=None, p_min=0.1):
     """
     This function implements Algorithm 3 from the paper by Beygelzimer et al. See https://arxiv.org/pdf/0812.4952.pdf.
     Uses bootstrapping to generate a hypothesis space and calculates rejection threshold probability p_t for unlabeled
@@ -214,13 +214,12 @@ def bootstrap(x_t, h_space, bootstrap_size, history, labels, loss_function, p_mi
     To generate a diverse hypothesis space, each predictor is trained on a set of examples selected i.i.d. (at random
     with replacement) from the set of samples in history. At the time of bootstrapping, the number of samples in history
     is equal to the bootstrap size.
-
     :param x_t:
     :param h_space:
     :param bootstrap_size:
     :param history:
     :param labels:
-    :param loss_function: Defines a loss function L(h(x),y) which standardizes output in the range [0,1].
+    :param loss_function:
     :param p_min:
     :return:
     """
@@ -235,6 +234,6 @@ def bootstrap(x_t, h_space, bootstrap_size, history, labels, loss_function, p_mi
 
     else:
         # trained predictors will be used to calculate p_t
-        p_t = _bootstrap_calculate_p_t(x_t, h_space, labels, loss_function, p_min)
+        p_t = _bootstrap_calculate_p_t(x_t, h_space, labels, p_min, loss_function)
 
     return p_t
