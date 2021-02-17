@@ -239,6 +239,7 @@ def _bootstrap_train_predictors(h_space, history):
 
 
 # done, tested
+# ?? currently p_t is always 1
 def bootstrap(x_t, h_space, bootstrap_size, history, labels, loss_function=None, p_min=0.1):
     """
     This function implements Algorithm 3 from the paper by Beygelzimer et al. See https://arxiv.org/pdf/0812.4952.pdf.

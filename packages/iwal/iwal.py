@@ -97,7 +97,7 @@ def _get_min_hypothesis(hypothesis_space: list, selected: list, labels: list, lo
         if loss < min_loss:
             min_loss = loss
             min_h = h
-            print('update minimum to coef,intercept,loss', h.coef_, h.intercept_, loss)
+            # print('update minimum to coef,intercept,loss', h.coef_, h.intercept_, loss)
     # print('min_loss is:', min_loss)
     return min_h
 
