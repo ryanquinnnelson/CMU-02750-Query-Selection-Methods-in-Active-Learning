@@ -52,7 +52,6 @@ def _choose_flip_action(flip: int, selected: list, x_t: np.ndarray, y_t: np.ndar
 
 
 # done, tested
-# ?? difference between loss function L() vs l()
 def _loss_summation_function(h: Any, selected: list, labels: list) -> float:
     total = 0.0
     for x, y, c in selected:
@@ -100,7 +99,6 @@ def _get_min_hypothesis(hypothesis_space: list, selected: list, labels: list, lo
 
 
 # done, testable
-# ?? hinge_loss prefers {-1,1} for labels. Should we convert our labels to those?
 def iwal_query(x_t: np.ndarray,
                y_t: np.ndarray,
                hypothesis_space: list,
@@ -110,9 +108,11 @@ def iwal_query(x_t: np.ndarray,
                rejection_threshold: str,
                bootstrap_size: int,
                p_min: float = 0.1) -> Any:
+    history_size = len(history['X'])
+
     # calculate probability of requesting label for x_t using the chosen rejection threshold function
     if rejection_threshold == 'bootstrap':
-        p_t = rt.bootstrap(x_t, hypothesis_space, bootstrap_size, history, labels, p_min)
+        p_t = rt.bootstrap(x_t, hypothesis_space, bootstrap_size, history, labels, loss_function=None, p_min=p_min)
     else:
         raise NotImplementedError('Function does not support rejection_threshold:', rejection_threshold)
 
@@ -126,9 +126,8 @@ def iwal_query(x_t: np.ndarray,
     _choose_flip_action(Q_t, selected, x_t, y_t, p_t, p_min)
 
     # select model with least loss
-    history_size = len(history['X'])
     if rejection_threshold == 'bootstrap' and history_size < bootstrap_size:  # bootstrapping in progress
-        h_t = None  # min hypothesis can only be calculated after bootstrapping is complete
+        h_t = None  # optimal hypothesis can only be calculated after bootstrapping is complete
     else:
         h_t = _get_min_hypothesis(hypothesis_space, selected, labels, _loss_summation_function)
 

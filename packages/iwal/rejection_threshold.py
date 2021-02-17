@@ -228,7 +228,6 @@ def _bootstrap_train_predictors(h_space, history):
     :param history:
     :return:
     """
-
     # create training set
     X, y = _bootstrap_reshape_history(history)
 
