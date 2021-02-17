@@ -6,7 +6,7 @@ from typing import Any
 import numpy as np
 import packages.iwal.rejection_threshold as rt
 from scipy.stats import bernoulli
-from packages.iwal.helper import calculate_hinge_loss
+from packages.iwal.helper import calculate_hinge_loss, calculate_log_loss
 
 
 # done, tested

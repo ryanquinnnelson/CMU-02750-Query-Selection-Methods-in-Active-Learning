@@ -154,7 +154,7 @@ def _bootstrap_combine_p_min_and_max_loss(p_min, max_loss_difference):
     if 0.0 <= max_loss_difference <= 1.0:
         p_t = p_min + (1 - p_min) * max_loss_difference
     else:
-        raise ValueError("Maximum loss difference must be normalized to [0,1]")
+        raise ValueError("Maximum loss difference must be normalized to [0,1]:", max_loss_difference)
 
     return p_t
 
