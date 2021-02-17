@@ -27,7 +27,7 @@ def test__bootstrap_calculate_max_loss_difference():
         return (x * h_i) - (x * h_j) + label
 
     expected = 3
-    actual = rt._bootstrap_calculate_max_loss_difference(x, h_space, labels, test_loss_difference_function)
+    actual = rt._bootstrap_get_loss_difference_range(x, h_space, labels, test_loss_difference_function)
     assert actual == expected
 
 
