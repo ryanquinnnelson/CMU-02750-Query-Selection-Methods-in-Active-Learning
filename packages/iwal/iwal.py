@@ -9,6 +9,11 @@ from scipy.stats import bernoulli
 from packages.iwal.helper import calculate_hinge_loss, calculate_log_loss
 
 
+# def test_loss_function(x, h, label, labels):
+#     loss = calculate_hinge_loss(x, h, label, labels)
+#     return loss / 100
+
+
 # done, tested
 def _append_history(history: dict, x_t: np.ndarray, y_t: np.ndarray, p_t: float, q_t: int) -> None:
     """
@@ -85,7 +90,7 @@ def _get_min_hypothesis(hypothesis_space: list, selected: list, labels: list, lo
 
     min_loss = 10000
     min_h = None
-    print('length of selected is',len(selected))
+
     # consider each model in hypothesis space
     for i in range(len(hypothesis_space)):
 
