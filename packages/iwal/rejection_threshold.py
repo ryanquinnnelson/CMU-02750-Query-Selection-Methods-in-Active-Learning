@@ -30,8 +30,8 @@ def _bootstrap_get_min_max_loss_difference(x, h_space, labels):
     max_loss = -10000
     min_loss = 10000
 
-    max_diff_loss_i = None
-    max_diff_loss_j = None
+    max_diff_loss_i = -10000
+    max_diff_loss_j = -10000
 
     # consider every pair of models in the hypothesis space combined with every label
     for i in range(len(h_space)):
@@ -48,21 +48,30 @@ def _bootstrap_get_min_max_loss_difference(x, h_space, labels):
 
                 # update max difference
                 if diff > max_diff:
+                    # print('i,j,label:', i, j, label)
+                    # print('loss_i:', loss_i)
+                    # print('loss_j:', loss_j)
+                    # print('diff:', diff)
+                    # print('found a new max!\n')
                     max_diff = diff
                     max_diff_loss_i = loss_i
                     max_diff_loss_j = loss_j
 
                 # update min and max for normalization process
                 if loss_i > max_loss:
+                    # print('update max_loss! maximum is now:', loss_i)
                     max_loss = loss_i
 
                 if loss_i < min_loss:
+                    # print('update min_loss! min is now:', loss_i)
                     min_loss = loss_i
 
                 if loss_j > max_loss:
+                    # print('update max_loss! maximum is now:', loss_j)
                     max_loss = loss_j
 
                 if loss_j < min_loss:
+                    # print('update min_loss! min is now:', loss_j)
                     min_loss = loss_j
 
     return min_loss, max_loss, max_diff_loss_i, max_diff_loss_j
@@ -73,7 +82,15 @@ def _bootstrap_calc_max_loss_difference_internal(x, h_space, labels):
     """
     Uses a workaround to derived a max loss difference normalized to [0,1].
 
-    Uses hinge_loss as the underlying loss function.
+    Process:
+    1. Calculate the hinge_loss of each (model, label). Record the minimum and maximum loss values found.
+    2. Whenever a new max loss difference is found, record the loss values of the two models involved.
+    3. After this process completes, use the min and max loss values to normalize both of the individual loss values
+    involved in the max loss difference.
+    4. Subtract these two normalized values to find the normalized max loss difference.
+
+    Notes:
+    This workaround tends to result in normalized values of only 1.0 or 0.0.
 
     :param x:
     :param h_space:
@@ -204,6 +221,9 @@ def _bootstrap_train_predictors(h_space, history):
     Note the entire history so far consists of selected samples, and the entire history should be used as the
     bootstrapping training set.
 
+    Current bug: Sometimes i.i.d. training set does not contain both 0 and 1 labels. This causes fit() to raise an
+    exception.
+
     :param h_space:
     :param history:
     :return:
@@ -242,12 +262,10 @@ def bootstrap(x_t, h_space, bootstrap_size, history, labels, loss_function=None,
     # actions depend on current training size and bootstrap size
     training_size = len(history['X'])
     if training_size <= bootstrap_size:  # bootstrapping process is not complete
-
         p_t = 1.0  # sample will be used for training and should be added to selected set
 
         if training_size == bootstrap_size:  # training set meets desired size for bootstrapping
             _bootstrap_train_predictors(h_space, history)
-
     else:
         # trained predictors will be used to calculate p_t
         p_t = _bootstrap_calculate_p_t(x_t, h_space, labels, p_min, loss_function)
