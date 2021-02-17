@@ -38,6 +38,9 @@ def _append_history(history: dict, x_t: np.ndarray, y_t: np.ndarray, p_t: float,
 def _choose_flip_action(flip: int, selected: list, x_t: np.ndarray, y_t: np.ndarray, p_t: float, p_min: float) -> None:
     """
     Takes an action depending on the outcome of a coin flip, where 1 indicates label is requested.
+
+    Note: The paper describes c_t in two ways. Once as 1/p_t. The other as p_min/p_t. I'm not sure whether using one
+    version or the other will impact the results.
     :param flip:
     :param selected:
     :param x_t:
@@ -82,7 +85,7 @@ def _get_min_hypothesis(hypothesis_space: list, selected: list, labels: list, lo
 
     min_loss = 10000
     min_h = None
-
+    print('length of selected is',len(selected))
     # consider each model in hypothesis space
     for i in range(len(hypothesis_space)):
 
@@ -94,7 +97,8 @@ def _get_min_hypothesis(hypothesis_space: list, selected: list, labels: list, lo
         if loss < min_loss:
             min_loss = loss
             min_h = h
-
+            print('update minimum to coef,intercept,loss', h.coef_, h.intercept_, loss)
+    # print('min_loss is:', min_loss)
     return min_h
 
 
