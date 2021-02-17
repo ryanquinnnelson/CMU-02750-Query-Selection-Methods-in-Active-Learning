@@ -6,7 +6,7 @@ from packages.iwal.helper import calculate_hinge_loss
 import numpy as np
 
 
-# done, testable
+# done, tested
 def _bootstrap_calc_z_value(x, min_value, max_value):
     if max_value - min_value == 0.0:
         z_value = 0.0
@@ -16,24 +16,22 @@ def _bootstrap_calc_z_value(x, min_value, max_value):
     return z_value
 
 
-# done, testable
-def _bootstrap_calc_max_loss_difference_internal(x, h_space, labels):
-    """
-    Uses a workaround to derived a max loss difference normalized to [0,1].
+# done, tested
+def _bootstrap_calc_normalized_max_loss_difference(min_loss, max_loss, loss_i, loss_j):
+    normalized_i = _bootstrap_calc_z_value(loss_i, min_loss, max_loss)
+    normalized_j = _bootstrap_calc_z_value(loss_j, min_loss, max_loss)
 
-    Uses hinge_loss as the underlying loss function.
+    return normalized_i - normalized_j
 
-    :param x:
-    :param h_space:
-    :param labels:
-    :return:
-    """
+
+# done tested
+def _bootstrap_get_min_max_loss_difference(x, h_space, labels):
     max_diff = -10000
     max_loss = -10000
     min_loss = 10000
 
-    max_diff_i = None
-    max_diff_j = None
+    max_diff_loss_i = None
+    max_diff_loss_j = None
 
     # consider every pair of models in the hypothesis space combined with every label
     for i in range(len(h_space)):
@@ -51,8 +49,8 @@ def _bootstrap_calc_max_loss_difference_internal(x, h_space, labels):
                 # update max difference
                 if diff > max_diff:
                     max_diff = diff
-                    max_diff_i = loss_i
-                    max_diff_j = loss_j
+                    max_diff_loss_i = loss_i
+                    max_diff_loss_j = loss_j
 
                 # update min and max for normalization process
                 if loss_i > max_loss:
@@ -67,13 +65,31 @@ def _bootstrap_calc_max_loss_difference_internal(x, h_space, labels):
                 if loss_j < min_loss:
                     min_loss = loss_j
 
+    return min_loss, max_loss, max_diff_loss_i, max_diff_loss_j
+
+
+# done, tested
+def _bootstrap_calc_max_loss_difference_internal(x, h_space, labels):
+    """
+    Uses a workaround to derived a max loss difference normalized to [0,1].
+
+    Uses hinge_loss as the underlying loss function.
+
+    :param x:
+    :param h_space:
+    :param labels:
+    :return:
+    """
+    # find min, max losses and the pair of loss values that result in the max loss difference
+    min_loss, max_loss, max_diff_i, max_diff_j = _bootstrap_get_min_max_loss_difference(x, h_space, labels)
+
     # normalize losses which resulted in max loss difference
-    normalized_i = _bootstrap_calc_z_value(min_loss, max_loss, max_diff_i)
-    normalized_j = _bootstrap_calc_z_value(min_loss, max_loss, max_diff_j)
-    return normalized_i - normalized_j
+    normalized = _bootstrap_calc_normalized_max_loss_difference(min_loss, max_loss, max_diff_i, max_diff_j)
+
+    return normalized
 
 
-# done, testable
+# done, tested
 def _bootstrap_calc_max_loss_using_loss_function(x, h_space, labels, loss_function):
     """
     Uses supplied loss_function to calculate the max loss difference.
@@ -107,7 +123,7 @@ def _bootstrap_calc_max_loss_using_loss_function(x, h_space, labels, loss_functi
     return max_diff
 
 
-# done, testable
+# done, tested
 def _bootstrap_combine_p_min_and_max_loss(p_min, max_loss_difference):
     """
     Performs final calculation for rejection threshold probability p_t using the following formula:
@@ -152,7 +168,7 @@ def _bootstrap_calculate_p_t(x_t, h_space, labels, p_min, loss_function):
     return p_t
 
 
-# done, testable
+# done, tested
 def _bootstrap_select_iid_training_set(X, y):
     """
     Selects n random samples from the given data set, with replacement. n is equal to the length of the data set.
@@ -166,7 +182,7 @@ def _bootstrap_select_iid_training_set(X, y):
     return X[indexes], y[indexes]
 
 
-# done, testable
+# done, tested
 def _bootstrap_reshape_history(history):
     """
     Combines list of separate samples in history to create a single data set.
@@ -180,7 +196,7 @@ def _bootstrap_reshape_history(history):
     return X, y
 
 
-# done, testable
+# done, tested
 def _bootstrap_train_predictors(h_space, history):
     """
     Trains all predictors in the hypothesis space using bootstrapping.
@@ -203,7 +219,7 @@ def _bootstrap_train_predictors(h_space, history):
         h.fit(X_train, y_train)
 
 
-# done, testable
+# done, tested
 def bootstrap(x_t, h_space, bootstrap_size, history, labels, loss_function=None, p_min=0.1):
     """
     This function implements Algorithm 3 from the paper by Beygelzimer et al. See https://arxiv.org/pdf/0812.4952.pdf.
