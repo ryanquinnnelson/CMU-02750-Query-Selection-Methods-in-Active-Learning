@@ -26,7 +26,7 @@ def _bootstrap_loss_function(predictor, x_t, y_true, labels):
 
 
 # done, tested
-def _bootstrap_check_losses(loss_i,loss_j):
+def _bootstrap_check_losses(loss_i, loss_j):
     """
 
     :param loss_i:
@@ -60,7 +60,7 @@ def _bootstrap_calc_max_loss(x_t, predictors, labels, loss_function):
 
                 # calculate loss difference
                 loss_i = loss_function(h_i, x_t, label, labels)
-                loss_j = loss_function(h_j,x_t,  label, labels)
+                loss_j = loss_function(h_j, x_t, label, labels)
                 _bootstrap_check_losses(loss_i, loss_j)
                 diff = loss_i - loss_j
 
@@ -109,7 +109,7 @@ def _bootstrap_calculate_p_t(x_t, predictors, labels, p_min, loss_function):
 
 
 # done, tested
-def _bootstrap_y_has_all_labels(y,labels):
+def _bootstrap_y_has_all_labels(y, labels):
     """
 
     :param y:
@@ -136,7 +136,7 @@ def _bootstrap_select_iid_training_set(X, y, labels):
     n = X.shape[0]
 
     # confirm y contains all labels expected in the data set
-    y_contains_all_labels = _bootstrap_y_has_all_labels(y,labels)
+    y_contains_all_labels = _bootstrap_y_has_all_labels(y, labels)
     if not y_contains_all_labels:
         raise ValueError('y does not contain all labels expected in the data set.')
 
@@ -144,13 +144,13 @@ def _bootstrap_select_iid_training_set(X, y, labels):
     training_has_all_labels = False
     while not training_has_all_labels:
         indexes = np.random.choice(n, n, replace=True)  # select n indices from a range of 0 to n-1
-        training_has_all_labels = _bootstrap_y_has_all_labels(y[indexes],labels)
+        training_has_all_labels = _bootstrap_y_has_all_labels(y[indexes], labels)
 
     return X[indexes], y[indexes]
 
 
 # done, tested
-def _bootstrap_reshape_history(X,y):
+def _bootstrap_reshape_history(X, y):
     """
     Combines list of separate samples in history to create a single data set.
 
@@ -160,7 +160,7 @@ def _bootstrap_reshape_history(X,y):
     """
     X_arr = np.concatenate(X, axis=0)
     y_arr = np.concatenate(y, axis=0)
-    return X_arr,y_arr
+    return X_arr, y_arr
 
 
 # done, tested
@@ -173,11 +173,11 @@ def _bootstrap_select_history(history, bootstrap_size):
     """
     X_history = history['X'][:bootstrap_size]
     y_history = history['y'][:bootstrap_size]
-    return X_history,y_history
+    return X_history, y_history
 
 
 # done, tested
-def _bootstrap_train_predictors(history,bootstrap_size,num_predictors, labels):
+def _bootstrap_train_predictors(history, bootstrap_size, num_predictors, labels):
     """
     Trains all predictors in the hypothesis space using bootstrapping.
 
@@ -189,8 +189,8 @@ def _bootstrap_train_predictors(history,bootstrap_size,num_predictors, labels):
     """
 
     # select training set to be used for bootstrapping
-    X_history,y_history = _bootstrap_select_history(history, bootstrap_size)
-    X, y = _bootstrap_reshape_history(X_history,y_history)
+    X_history, y_history = _bootstrap_select_history(history, bootstrap_size)
+    X, y = _bootstrap_reshape_history(X_history, y_history)
 
     # train predictors
     predictors = []
@@ -203,7 +203,7 @@ def _bootstrap_train_predictors(history,bootstrap_size,num_predictors, labels):
 
 
 # done, need to test second case
-def bootstrap(x_t, history, bootstrap_size=10, num_predictors=10, labels=[0,1], p_min=0.1, loss_function=None):
+def bootstrap(x_t, history, bootstrap_size=10, num_predictors=10, labels=[0, 1], p_min=0.1, loss_function=None):
     """
     This function implements Algorithm 3 from the paper by Beygelzimer et al. See https://arxiv.org/pdf/0812.4952.pdf.
     Uses bootstrapping to generate a hypothesis space and calculates rejection threshold probability p_t for unlabeled
@@ -230,7 +230,7 @@ def bootstrap(x_t, history, bootstrap_size=10, num_predictors=10, labels=[0,1], 
 
     else:
         # create bootstrapped committee of predictors
-        predictors = _bootstrap_train_predictors(history,bootstrap_size,num_predictors,labels)
+        predictors = _bootstrap_train_predictors(history, bootstrap_size, num_predictors, labels)
 
         # calculate probability
         p_t = _bootstrap_calculate_p_t(x_t, predictors, labels, p_min, loss_function)

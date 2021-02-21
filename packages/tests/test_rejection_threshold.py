@@ -21,7 +21,7 @@ def test__bootstrap_reshape_history_numpy_array():
     y1 = np.asarray([1])
     y2 = np.asarray([0])
     y_before = [y1, y2]
-    X_after, y_after = rt._bootstrap_reshape_history(X_before,y_before)
+    X_after, y_after = rt._bootstrap_reshape_history(X_before, y_before)
 
     assert X_after.shape == (2, 2)
     assert y_after.shape == (2,)
@@ -35,7 +35,7 @@ def test__bootstrap_reshape_history_2d_list():
     y1 = [1]
     y2 = [0]
     y_before = [y1, y2]
-    X_after, y_after = rt._bootstrap_reshape_history(X_before,y_before)
+    X_after, y_after = rt._bootstrap_reshape_history(X_before, y_before)
 
     assert X_after.shape == (2, 2)
     assert y_after.shape == (2,)
@@ -43,20 +43,20 @@ def test__bootstrap_reshape_history_2d_list():
 
 def test__bootstrap_y_has_all_labels_success():
     y = np.array([0, 1, 1, 0, 1, 0, 1, 0, 1, 1])
-    labels = [0,1]
-    assert rt._bootstrap_y_has_all_labels(y,labels)
+    labels = [0, 1]
+    assert rt._bootstrap_y_has_all_labels(y, labels)
 
 
 def test__bootstrap_y_has_all_labels_failure():
     y = np.array([0, 1, 1, 0, 1, 0, 1, 0, 1, 1])
-    labels = [0,1,2]
-    assert rt._bootstrap_y_has_all_labels(y,labels) is False
+    labels = [0, 1, 2]
+    assert rt._bootstrap_y_has_all_labels(y, labels) is False
 
 
 def test__bootstrap_select_iid_training_set_y_not_all_labels():
     X = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     y = np.array([0, 1, 1, 0, 1, 0, 1, 0, 1, 1])
-    labels = [0,2]
+    labels = [0, 2]
 
     with pytest.raises(ValueError):
         rt._bootstrap_select_iid_training_set(X, y, labels)
@@ -78,13 +78,13 @@ def test__bootstrap_select_iid_training_set():
 
 def test__bootstrap_select_history():
     history = {
-        'X':[1,2,3,4],
-        'y':[5,6,7,8]
+        'X': [1, 2, 3, 4],
+        'y': [5, 6, 7, 8]
     }
     bootstrap_size = 3
-    X_expected = [1,2,3]
-    y_expected = [5,6,7]
-    X_actual,y_actual = rt._bootstrap_select_history(history, bootstrap_size)
+    X_expected = [1, 2, 3]
+    y_expected = [5, 6, 7]
+    X_actual, y_actual = rt._bootstrap_select_history(history, bootstrap_size)
     assert X_actual == X_expected
     assert y_actual == y_expected
 
@@ -98,32 +98,32 @@ def test__bootstrap_train_predictors():
     """
 
     X_train = [[[2.59193175, 1.14706863]],
-                [[1.7756532, 1.15670278]],
-                [[2.8032241, 0.5802936]],
-                [[1.6090616, 0.61957339]],
-                [[2.04921553, 5.33233847]],
-                [[0.50554777, 4.05210011]],
-                [[1.07710058, 5.32177878]],
-                [[0.35482006, 2.9172298]],
-                [[1.96225112, 0.68921004]],
-                [[-0.16486876, 4.62773491]]]
+               [[1.7756532, 1.15670278]],
+               [[2.8032241, 0.5802936]],
+               [[1.6090616, 0.61957339]],
+               [[2.04921553, 5.33233847]],
+               [[0.50554777, 4.05210011]],
+               [[1.07710058, 5.32177878]],
+               [[0.35482006, 2.9172298]],
+               [[1.96225112, 0.68921004]],
+               [[-0.16486876, 4.62773491]]]
 
     y_train = [[1],
-                [1],
-                [1],
-                [1],
-                [0],
-                [0],
-                [0],
-                [0],
-                [1],
-                [0]]
+               [1],
+               [1],
+               [1],
+               [0],
+               [0],
+               [0],
+               [0],
+               [1],
+               [0]]
     history = {'X': X_train, 'y': y_train}
     bootstrap_size = 10
     num_predictors = 3
-    labels = [0,1]
+    labels = [0, 1]
 
-    predictors = rt._bootstrap_train_predictors(history, bootstrap_size, num_predictors,labels)
+    predictors = rt._bootstrap_train_predictors(history, bootstrap_size, num_predictors, labels)
     for predictor in predictors:
         try:
             predictor.predict([[3, 1]])
@@ -154,26 +154,28 @@ def test__bootstrap_loss_function():
                1,
                0]
 
-    lr = LogisticRegression().fit(X_train,y_train)
-    x_t = [[3,1]]
+    lr = LogisticRegression().fit(X_train, y_train)
+    x_t = [[3, 1]]
     y_true = [1]
-    labels = [0,1]
-    expected = log_loss(y_true, lr.predict_proba(x_t),labels=labels)
-    actual = rt._bootstrap_loss_function(lr,x_t,y_true,labels)
+    labels = [0, 1]
+    expected = log_loss(y_true, lr.predict_proba(x_t), labels=labels)
+    actual = rt._bootstrap_loss_function(lr, x_t, y_true, labels)
     assert actual == expected
 
 
 def test__bootstrap_check_losses_success():
     loss_i = 0.0
     loss_j = 1.0
-    rt._bootstrap_check_losses(loss_i,loss_j)
+    rt._bootstrap_check_losses(loss_i, loss_j)
+
 
 def test__bootstrap_check_losses_success_failure_i_low():
     loss_i = -0.1
     loss_j = 1.0
 
     with pytest.raises(ValueError):
-        rt._bootstrap_check_losses(loss_i,loss_j)
+        rt._bootstrap_check_losses(loss_i, loss_j)
+
 
 def test__bootstrap_check_losses_success_failure_i_high():
     loss_i = 1.1
@@ -182,12 +184,14 @@ def test__bootstrap_check_losses_success_failure_i_high():
     with pytest.raises(ValueError):
         rt._bootstrap_check_losses(loss_i, loss_j)
 
+
 def test__bootstrap_check_losses_success_failure_j_low():
     loss_i = 1.0
     loss_j = -0.1
 
     with pytest.raises(ValueError):
         rt._bootstrap_check_losses(loss_i, loss_j)
+
 
 def test__bootstrap_check_losses_success_failure_j_high():
     loss_i = 1.0
@@ -196,13 +200,14 @@ def test__bootstrap_check_losses_success_failure_j_high():
     with pytest.raises(ValueError):
         rt._bootstrap_check_losses(loss_i, loss_j)
 
+
 def test__bootstrap_calc_max_loss_using_loss_function():
-    predictors = [1,2,3,4,5]
-    test_labels = [0,1]
+    predictors = [1, 2, 3, 4, 5]
+    test_labels = [0, 1]
     x_t = .1
 
-    def loss_function(h,x,label,labels):
-        return h*x
+    def loss_function(h, x, label, labels):
+        return h * x
 
     expected = .4
     actual = rt._bootstrap_calc_max_loss(x_t, predictors, test_labels, loss_function)
@@ -224,13 +229,10 @@ def test__bootstrap_calculate_p_t_with_function():
 
 
 def test_bootstrap_history_less_than_bootstrap_size():
-    x_t = [[3,1]]
+    x_t = [[3, 1]]
     history = {
-        'X':[]
+        'X': []
     }
     expected = 1.0
     actual = rt.bootstrap(x_t, history)
     assert actual == expected
-
-
-
