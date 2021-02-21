@@ -7,6 +7,14 @@ import numpy as np
 
 # done, tested
 def calculate_hinge_loss(x, h, label, labels):
+    """
+
+    :param x:
+    :param h:
+    :param label:
+    :param labels:
+    :return:
+    """
     y_true = np.full(shape=len(x), fill_value=label, dtype=np.int)
     pred_decision = h.decision_function(x)
     loss = hinge_loss(y_true, pred_decision, labels=labels)
@@ -14,8 +22,16 @@ def calculate_hinge_loss(x, h, label, labels):
     return loss
 
 
-# done, testable
+# done, tested
 def calculate_log_loss(x, h, label, labels):
+    """
+    
+    :param x:
+    :param h:
+    :param label:
+    :param labels:
+    :return:
+    """
     y_true = np.full(shape=len(x), fill_value=label, dtype=np.int)
     y_pred = h.predict_proba(x)
     loss = log_loss(y_true, y_pred, labels=labels)
