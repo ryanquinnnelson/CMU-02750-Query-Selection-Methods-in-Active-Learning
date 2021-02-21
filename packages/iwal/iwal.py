@@ -30,8 +30,8 @@ def _append_history(history: dict, x_t: np.ndarray, y_t: int, p_t: float, q_t: i
     if 'y' not in history:
         history['y'] = np.array([y_t])
     else:
-        appended = np.append(history['y'], [y_t],axis=0)
-        history['y']=appended
+        appended = np.append(history['y'], [y_t], axis=0)
+        history['y'] = appended
 
     if 'c' not in history:
         history['c'] = [p_t]
@@ -45,8 +45,7 @@ def _append_history(history: dict, x_t: np.ndarray, y_t: int, p_t: float, q_t: i
 
 
 # done, tested2
-def _add_to_selected(selected, x_t,y_t,c_t):
-
+def _add_to_selected(selected, x_t, y_t, c_t):
     if 'X' not in selected:
         selected['X'] = np.array([x_t])
     else:
@@ -56,8 +55,8 @@ def _add_to_selected(selected, x_t,y_t,c_t):
     if 'y' not in selected:
         selected['y'] = np.array(y_t)
     else:
-        appended = np.append(selected['y'], y_t,axis=0)
-        selected['y']=appended
+        appended = np.append(selected['y'], y_t, axis=0)
+        selected['y'] = appended
 
     if 'c' not in selected:
         selected['c'] = [c_t]
@@ -86,11 +85,11 @@ def _choose_flip_action(flip: int, selected: dict, x_t: np.ndarray, y_t: np.ndar
         c_t = p_min / p_t
 
         # add to set of selected samples
-        _add_to_selected(selected, x_t,y_t,c_t)
+        _add_to_selected(selected, x_t, y_t, c_t)
 
 
 # done, tested2
-def _all_labels_in_selected(selected,labels):
+def _all_labels_in_selected(selected, labels):
     """
 
     :param selected:
@@ -105,7 +104,7 @@ def _all_labels_in_selected(selected,labels):
 
 # done, testable
 def iwal_query(x_t: np.ndarray, y_t: np.ndarray, history: dict, selected: dict, rejection_threshold: str,
-               labels=[0,1], p_min: float = 0.1) -> Any:
+               labels=[0, 1], p_min: float = 0.1) -> Any:
     """
 
     :param x_t:

@@ -51,10 +51,10 @@ def test__add_to_selected_no_selected():
     y_t = np.array([1])
     c_t = 0.5
 
-    iw._add_to_selected(selected, x_t,y_t,c_t)
+    iw._add_to_selected(selected, x_t, y_t, c_t)
 
     assert x_t in selected['X']
-    assert selected['X'].shape == (1,2)
+    assert selected['X'].shape == (1, 2)
     assert y_t in selected['y']
     assert selected['y'].shape == (1,)
     assert c_t in selected['c']
@@ -71,7 +71,7 @@ def test__add_to_selected_selected_exists():
     y_t = np.array([1])
     c_t = 0.5
 
-    iw._add_to_selected(selected, x_t,y_t,c_t)
+    iw._add_to_selected(selected, x_t, y_t, c_t)
 
     assert x_t in selected['X']
     assert y_t in selected['y']
@@ -102,22 +102,20 @@ def test__add_to_selected_selected_exists_large_count():
                         0])
 
     selected = {
-        'X':X_train,
-        'y':y_train,
-        'c':[1.0 for _ in range(10)]
+        'X': X_train,
+        'y': y_train,
+        'c': [1.0 for _ in range(10)]
     }
 
     x_t = np.array([1, 2])
     y_t = np.array([1])
     c_t = 0.5
 
-    iw._add_to_selected(selected, x_t,y_t,c_t)
+    iw._add_to_selected(selected, x_t, y_t, c_t)
 
     assert x_t in selected['X']
     assert y_t in selected['y']
     assert c_t in selected['c']
-
-
 
 
 def test__choose_flip_action_heads():
@@ -143,31 +141,31 @@ def test__choose_flip_action_tails():
     iw._choose_flip_action(Q_t, s, x_t, y_t, p_t, p_min)
     assert 'X' not in s
 
+
 def test__all_labels_in_selected_success():
-    selected = {'y': np.array([0,1])}
-    labels = [0,1]
-    assert iw._all_labels_in_selected(selected,labels)
+    selected = {'y': np.array([0, 1])}
+    labels = [0, 1]
+    assert iw._all_labels_in_selected(selected, labels)
 
 
 def test__all_labels_in_selected_failure():
     selected = {'y': np.array([np.array([0])])}
-    labels = [0,1]
-    assert iw._all_labels_in_selected(selected,labels) is False
-
+    labels = [0, 1]
+    assert iw._all_labels_in_selected(selected, labels) is False
 
 
 def test_iwal_query_bootstrap_selected_not_all_labels():
     history = {}
     selected = {}
     x_t = np.array([3, 1])
-    y_t= np.array([1])
+    y_t = np.array([1])
 
-    actual = iw.iwal_query(x_t,y_t , history, selected,  'bootstrap')
+    actual = iw.iwal_query(x_t, y_t, history, selected, 'bootstrap')
     assert len(history['X']) == 1
     assert len(history['y']) == 1
     assert len(history['c']) == 1
     assert len(history['Q']) == 1
-    assert len(selected['X']) ==1
+    assert len(selected['X']) == 1
     assert len(selected['y']) == 1
     assert len(selected['c']) == 1
     assert actual is None
@@ -197,16 +195,16 @@ def test_iwal_query_bootstrap_selected_all_labels():
                         0])
 
     selected = {
-        'X':X_train,
-        'y':y_train,
-        'c':[1.0 for _ in range(10)]
+        'X': X_train,
+        'y': y_train,
+        'c': [1.0 for _ in range(10)]
     }
 
     history = {}
     x_t = np.array([3, 1])
     y_t = np.array([1])
 
-    h_t = iw.iwal_query(x_t,y_t , history, selected,  'bootstrap')
+    h_t = iw.iwal_query(x_t, y_t, history, selected, 'bootstrap')
 
     # test that model has been fitted
     try:
