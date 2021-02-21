@@ -8,7 +8,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import hinge_loss, log_loss
 
 
-# done, tested
+# done, tested2
 def _bootstrap_loss_function(predictor, x_t, y_true, labels):
     """
 
@@ -25,7 +25,7 @@ def _bootstrap_loss_function(predictor, x_t, y_true, labels):
     return loss
 
 
-# done, tested
+# done, tested2
 def _bootstrap_check_losses(loss_i, loss_j):
     """
 
@@ -37,7 +37,7 @@ def _bootstrap_check_losses(loss_i, loss_j):
         raise ValueError('Loss must be within range [0,1]:', loss_i, loss_j)
 
 
-# done, tested
+# done, tested2
 def _bootstrap_calc_max_loss(x_t, predictors, labels, loss_function):
     """
     Uses supplied loss_function to calculate the max loss difference.
@@ -71,7 +71,7 @@ def _bootstrap_calc_max_loss(x_t, predictors, labels, loss_function):
     return max_diff
 
 
-# done, tested
+# done, tested2
 def _bootstrap_combine_p_min_and_max_loss(p_min, max_loss_difference):
     """
     Performs final calculation for rejection threshold probability p_t using the following formula:
@@ -108,7 +108,7 @@ def _bootstrap_calculate_p_t(x_t, predictors, labels, p_min, loss_function):
     return p_t
 
 
-# done, tested
+# done, tested2
 def _bootstrap_y_has_all_labels(y, labels):
     """
 
@@ -124,7 +124,7 @@ def _bootstrap_y_has_all_labels(y, labels):
     return True
 
 
-# done, tested
+# done, tested2
 def _bootstrap_select_iid_training_set(X, y, labels):
     """
     Selects n random samples from the given data set, with replacement, where n is equal to the length of the data set.
@@ -133,7 +133,7 @@ def _bootstrap_select_iid_training_set(X, y, labels):
     :param y:
     :return:
     """
-    n = X.shape[0]
+    n = len(X)
 
     # confirm y contains all labels expected in the data set
     y_contains_all_labels = _bootstrap_y_has_all_labels(y, labels)
@@ -149,21 +149,21 @@ def _bootstrap_select_iid_training_set(X, y, labels):
     return X[indexes], y[indexes]
 
 
-# done, tested
-def _bootstrap_reshape_history(X, y):
-    """
-    Combines list of separate samples in history to create a single data set.
+# # done, tested
+# def _bootstrap_reshape_history(X, y):
+#     """
+#     Combines list of separate samples in history to create a single data set.
+#
+#     :param X:
+#     :param y:
+#     :return:
+#     """
+#     X_arr = np.concatenate(X, axis=0)
+#     y_arr = np.concatenate(y, axis=0)
+#     return X_arr, y_arr
 
-    :param X:
-    :param y:
-    :return:
-    """
-    X_arr = np.concatenate(X, axis=0)
-    y_arr = np.concatenate(y, axis=0)
-    return X_arr, y_arr
 
-
-# done, tested
+# done, tested2
 def _bootstrap_select_history(history, bootstrap_size):
     """
 
@@ -176,7 +176,7 @@ def _bootstrap_select_history(history, bootstrap_size):
     return X_history, y_history
 
 
-# done, tested
+# done, tested2
 def _bootstrap_train_predictors(history, bootstrap_size, num_predictors, labels):
     """
     Trains all predictors in the hypothesis space using bootstrapping.
@@ -190,12 +190,12 @@ def _bootstrap_train_predictors(history, bootstrap_size, num_predictors, labels)
 
     # select training set to be used for bootstrapping
     X_history, y_history = _bootstrap_select_history(history, bootstrap_size)
-    X, y = _bootstrap_reshape_history(X_history, y_history)
+    # X, y = _bootstrap_reshape_history(X_history, y_history)
 
     # train predictors
     predictors = []
     for i in range(num_predictors):
-        X_train, y_train = _bootstrap_select_iid_training_set(X, y, labels)
+        X_train, y_train = _bootstrap_select_iid_training_set(X_history, y_history, labels)
         lr = LogisticRegression().fit(X_train, y_train)
         predictors.append(lr)
 

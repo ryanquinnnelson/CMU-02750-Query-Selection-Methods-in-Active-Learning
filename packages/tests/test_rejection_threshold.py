@@ -13,32 +13,32 @@ def test__bootstrap_combine_p_min_and_max_loss():
     assert actual == 0.55
 
 
-def test__bootstrap_reshape_history_numpy_array():
-    x1 = np.asarray([[2.59193175, 1.14706863]])
-    x2 = np.asarray([[1.7756532, 1.15670278]])
-    X_before = [x1, x2]
+# def test__bootstrap_reshape_history_numpy_array():
+#     x1 = np.asarray([[2.59193175, 1.14706863]])
+#     x2 = np.asarray([[1.7756532, 1.15670278]])
+#     X_before = [x1, x2]
+#
+#     y1 = np.asarray([1])
+#     y2 = np.asarray([0])
+#     y_before = [y1, y2]
+#     X_after, y_after = rt._bootstrap_reshape_history(X_before, y_before)
+#
+#     assert X_after.shape == (2, 2)
+#     assert y_after.shape == (2,)
+#
 
-    y1 = np.asarray([1])
-    y2 = np.asarray([0])
-    y_before = [y1, y2]
-    X_after, y_after = rt._bootstrap_reshape_history(X_before, y_before)
-
-    assert X_after.shape == (2, 2)
-    assert y_after.shape == (2,)
-
-
-def test__bootstrap_reshape_history_2d_list():
-    x1 = [[2.59193175, 1.14706863]]
-    x2 = [[1.7756532, 1.15670278]]
-    X_before = [x1, x2]
-
-    y1 = [1]
-    y2 = [0]
-    y_before = [y1, y2]
-    X_after, y_after = rt._bootstrap_reshape_history(X_before, y_before)
-
-    assert X_after.shape == (2, 2)
-    assert y_after.shape == (2,)
+# def test__bootstrap_reshape_history_2d_list():
+#     x1 = [2.59193175, 1.14706863]
+#     x2 = [1.7756532, 1.15670278]
+#     X_before = [x1, x2]
+#
+#     y1 = 1
+#     y2 = 2
+#     y_before = [y1, y2]
+#     X_after, y_after = rt._bootstrap_reshape_history(X_before, y_before)
+#
+#     assert X_after.shape == (2, 2)
+#     assert y_after.shape == (2,)
 
 
 def test__bootstrap_y_has_all_labels_success():
@@ -54,7 +54,7 @@ def test__bootstrap_y_has_all_labels_failure():
 
 
 def test__bootstrap_select_iid_training_set_y_not_all_labels():
-    X = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    X = np.array([[1,1], [2,2], [3,3], [4,4], [5,5], [6,6], [7,7], [8,8], [9,9], [10,10]])
     y = np.array([0, 1, 1, 0, 1, 0, 1, 0, 1, 1])
     labels = [0, 2]
 
@@ -64,29 +64,29 @@ def test__bootstrap_select_iid_training_set_y_not_all_labels():
 
 # not currently testing i.i.d.
 def test__bootstrap_select_iid_training_set():
-    X = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    X = np.array([[1,1], [2,2], [3,3], [4,4], [5,5], [6,6], [7,7], [8,8], [9,9], [10,10]])
     y = np.array([0, 1, 1, 0, 1, 0, 1, 0, 1, 1])
     labels = [0, 1]
 
     X_train, y_train = rt._bootstrap_select_iid_training_set(X, y, labels)
 
-    assert X_train.shape[0] == X.shape[0]
-    assert y_train.shape[0] == y.shape[0]
+    assert len(X_train) == len(X)
+    assert len(y_train) == len(y)
     for label in labels:
         assert label in y_train
 
 
 def test__bootstrap_select_history():
     history = {
-        'X': [1, 2, 3, 4],
-        'y': [5, 6, 7, 8]
+        'X': np.array([[1,2],[2,3],[3,4],[4,5]]),
+        'y': np.array([0,1,1,0])
     }
     bootstrap_size = 3
-    X_expected = [1, 2, 3]
-    y_expected = [5, 6, 7]
+    X_expected = [[1,2],[2,3],[3,4]]
+    y_expected = [0,1,1]
     X_actual, y_actual = rt._bootstrap_select_history(history, bootstrap_size)
-    assert X_actual == X_expected
-    assert y_actual == y_expected
+    assert X_actual.tolist() == X_expected
+    assert y_actual.tolist() == y_expected
 
 
 # not currently testing whether models are different
@@ -96,28 +96,28 @@ def test__bootstrap_train_predictors():
     https://stackoverflow.com/questions/39884009/whats-the-best-way-to-test-whether-an-sklearn-model-has-been-fitted/51200847
     :return:
     """
+    X_train = np.array([[2.59193175, 1.14706863],
+                        [1.7756532, 1.15670278],
+                        [2.8032241, 0.5802936],
+                        [1.6090616, 0.61957339],
+                        [2.04921553, 5.33233847],
+                        [0.50554777, 4.05210011],
+                        [1.07710058, 5.32177878],
+                        [0.35482006, 2.9172298],
+                        [1.96225112, 0.68921004],
+                        [-0.16486876, 4.62773491]])
 
-    X_train = [[[2.59193175, 1.14706863]],
-               [[1.7756532, 1.15670278]],
-               [[2.8032241, 0.5802936]],
-               [[1.6090616, 0.61957339]],
-               [[2.04921553, 5.33233847]],
-               [[0.50554777, 4.05210011]],
-               [[1.07710058, 5.32177878]],
-               [[0.35482006, 2.9172298]],
-               [[1.96225112, 0.68921004]],
-               [[-0.16486876, 4.62773491]]]
+    y_train = np.array([1,
+                        1,
+                        1,
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        1,
+                        0])
 
-    y_train = [[1],
-               [1],
-               [1],
-               [1],
-               [0],
-               [0],
-               [0],
-               [0],
-               [1],
-               [0]]
     history = {'X': X_train, 'y': y_train}
     bootstrap_size = 10
     num_predictors = 3
@@ -132,27 +132,27 @@ def test__bootstrap_train_predictors():
 
 
 def test__bootstrap_loss_function():
-    X_train = [[2.59193175, 1.14706863],
-               [1.7756532, 1.15670278],
-               [2.8032241, 0.5802936],
-               [1.6090616, 0.61957339],
-               [2.04921553, 5.33233847],
-               [0.50554777, 4.05210011],
-               [1.07710058, 5.32177878],
-               [0.35482006, 2.9172298],
-               [1.96225112, 0.68921004],
-               [-0.16486876, 4.62773491]]
+    X_train = np.array([[2.59193175, 1.14706863],
+                        [1.7756532, 1.15670278],
+                        [2.8032241, 0.5802936],
+                        [1.6090616, 0.61957339],
+                        [2.04921553, 5.33233847],
+                        [0.50554777, 4.05210011],
+                        [1.07710058, 5.32177878],
+                        [0.35482006, 2.9172298],
+                        [1.96225112, 0.68921004],
+                        [-0.16486876, 4.62773491]])
 
-    y_train = [1,
-               1,
-               1,
-               1,
-               0,
-               0,
-               0,
-               0,
-               1,
-               0]
+    y_train = np.array([1,
+                        1,
+                        1,
+                        1,
+                        0,
+                        0,
+                        0,
+                        0,
+                        1,
+                        0])
 
     lr = LogisticRegression().fit(X_train, y_train)
     x_t = [[3, 1]]

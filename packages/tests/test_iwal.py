@@ -85,42 +85,49 @@ def test_iwal_query_bootstrap_selected_not_all_labels():
     assert actual is None
 
 
-def test_iwal_query_bootstrap_selected_all_labels():
+# def test_iwal_query_bootstrap_selected_all_labels():
+#     X = [[[2.59193175, 1.14706863]],
+#          [[1.7756532, 1.15670278]],
+#          [[2.8032241, 0.5802936]],
+#          [[1.6090616, 0.61957339]],
+#          [[2.04921553, 5.33233847]],
+#          [[0.50554777, 4.05210011]],
+#          [[1.07710058, 5.32177878]],
+#          [[0.35482006, 2.9172298]],
+#          [[1.96225112, 0.68921004]],
+#          [[-0.16486876, 4.62773491]]]
+#
+#     y = [
+#         [1],
+#         [1],
+#         [1],
+#         [1],
+#         [0],
+#         [0],
+#         [0],
+#         [0],
+#         [1],
+#         [0]]
+#
+#
+#     c = [1.0 for _ in range(10)]
+#     #
+#     #
+#     # history = {'X': [], 'y': [], 'c': [], 'Q': []}
+#     # selected = {
+#     #     'X':X_train,
+#     #     'y':y_train,
+#     #     'c':[1.0 for each in range(10)]
+#     # }
+#     lr = LogisticRegression().fit(X,y,sample_weight=c)
 
-    X_train = [[2.59193175, 1.14706863],
-               [1.7756532, 1.15670278],
-               [2.8032241, 0.5802936],
-               [1.6090616, 0.61957339],
-               [2.04921553, 5.33233847],
-               [0.50554777, 4.05210011],
-               [1.07710058, 5.32177878],
-               [0.35482006, 2.9172298],
-               [1.96225112, 0.68921004],
-               [-0.16486876, 4.62773491]]
-
-    y_train = [1,
-               1,
-               1,
-               1,
-               0,
-               0,
-               0,
-               0,
-               1,
-               0]
-
-    history = {'X': [], 'y': [], 'c': [], 'Q': []}
-    selected = {
-        'X':X_train,
-        'y':y_train,
-        'c':[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0]
-    }
-    x_t = [[3, 1]]
-    y_t= [1]
-    print(selected['X'])
-    print(selected['y'])
-    print(selected['c'])
-    h_t = iw.iwal_query(x_t,y_t , history, selected,  'bootstrap')
+    #
+    # x_t = [3, 1]
+    # y_t= 1
+    # print(selected['X'])
+    # print(selected['y'])
+    # print(selected['c'])
+    # h_t = iw.iwal_query(x_t,y_t , history, selected,  'bootstrap')
 
     # # test that model has been fitted
     # try:
