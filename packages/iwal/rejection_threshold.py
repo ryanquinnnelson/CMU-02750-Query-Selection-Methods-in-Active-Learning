@@ -223,7 +223,12 @@ def bootstrap(x_t, history, bootstrap_size=10, num_predictors=10, labels=[0, 1],
     :return:
     """
     # actions depend on current training size and bootstrap size
-    training_size = len(history['X'])
+    if 'X' in history:
+        training_size = len(history['X'])
+    else:
+        training_size = 0
+
+
     if training_size < bootstrap_size:  # bootstrapping process is not complete
 
         p_t = 1.0  # sample will be used for training and should be added to selected set

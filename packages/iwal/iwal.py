@@ -9,8 +9,8 @@ from scipy.stats import bernoulli
 from sklearn.linear_model import LogisticRegression
 
 
-# done, tested
-def _append_history(history: dict, x_t: np.ndarray, y_t: np.ndarray, p_t: float, q_t: int) -> None:
+# done, tested2
+def _append_history(history: dict, x_t: np.ndarray, y_t: int, p_t: float, q_t: int) -> None:
     """
     Adds given sample to given query history dictionary.
 
@@ -21,20 +21,53 @@ def _append_history(history: dict, x_t: np.ndarray, y_t: np.ndarray, p_t: float,
     :param q_t:
     :return:
     """
-    # validate that history contains required keys
-    if 'X' in history and 'y' in history and 'c' in history and 'Q' in history:
+    if 'X' not in history:
+        history['X'] = np.array([x_t])
+    else:
+        appended = np.append(history['X'], [x_t], axis=0)
+        history['X'] = appended
 
-        # add to history
-        np.append(history['X'],x_t)
-        history['y'].append(y_t)
+    if 'y' not in history:
+        history['y'] = np.array([y_t])
+    else:
+        appended = np.append(history['y'], [y_t],axis=0)
+        history['y']=appended
+
+    if 'c' not in history:
+        history['c'] = [p_t]
+    else:
         history['c'].append(p_t)
+
+    if 'Q' not in history:
+        history['Q'] = [q_t]
+    else:
         history['Q'].append(q_t)
 
+
+# done, tested2
+def _add_to_selected(selected, x_t,y_t,c_t):
+    print(x_t.shape)
+    print(y_t.shape)
+
+    if 'X' not in selected:
+        selected['X'] = np.array([x_t])
     else:
-        raise ValueError('history dictionary does not contain the required keys: X,y,c,Q')
+        appended = np.append(selected['X'], [x_t], axis=0)
+        selected['X'] = appended
+
+    if 'y' not in selected:
+        selected['y'] = np.array([y_t])
+    else:
+        appended = np.append(selected['y'], [y_t],axis=0)
+        selected['y']=appended
+
+    if 'c' not in selected:
+        selected['c'] = [c_t]
+    else:
+        selected['c'].append(c_t)
 
 
-# done, tested
+# done, tested2
 def _choose_flip_action(flip: int, selected: dict, x_t: np.ndarray, y_t: np.ndarray, p_t: float, p_min: float) -> None:
     """
     Takes an action depending on the outcome of a coin flip, where 1 indicates label is requested.
@@ -55,9 +88,7 @@ def _choose_flip_action(flip: int, selected: dict, x_t: np.ndarray, y_t: np.ndar
         c_t = p_min / p_t
 
         # add to set of selected samples
-        selected['X'].append(x_t)
-        selected['y'].append(y_t)
-        selected['c'].append(c_t)
+        _add_to_selected(selected, x_t,y_t,c_t)
 
 
 # done, tested
