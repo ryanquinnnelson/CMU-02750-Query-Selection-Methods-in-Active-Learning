@@ -46,8 +46,6 @@ def _append_history(history: dict, x_t: np.ndarray, y_t: int, p_t: float, q_t: i
 
 # done, tested2
 def _add_to_selected(selected, x_t,y_t,c_t):
-    print(x_t.shape)
-    print(y_t.shape)
 
     if 'X' not in selected:
         selected['X'] = np.array([x_t])
@@ -56,9 +54,9 @@ def _add_to_selected(selected, x_t,y_t,c_t):
         selected['X'] = appended
 
     if 'y' not in selected:
-        selected['y'] = np.array([y_t])
+        selected['y'] = np.array(y_t)
     else:
-        appended = np.append(selected['y'], [y_t],axis=0)
+        appended = np.append(selected['y'], y_t,axis=0)
         selected['y']=appended
 
     if 'c' not in selected:
@@ -91,7 +89,7 @@ def _choose_flip_action(flip: int, selected: dict, x_t: np.ndarray, y_t: np.ndar
         _add_to_selected(selected, x_t,y_t,c_t)
 
 
-# done, tested
+# done, tested2
 def _all_labels_in_selected(selected,labels):
     """
 
