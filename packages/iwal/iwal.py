@@ -104,7 +104,7 @@ def _all_labels_in_selected(selected, labels):
 
 # done, testable
 def iwal_query(x_t: np.ndarray, y_t: np.ndarray, history: dict, selected: dict, rejection_threshold: str,
-               labels=[0, 1], p_min: float = 0.1) -> Any:
+               labels: list = [0, 1], p_min: float = 0.1) -> Any:
     """
 
     :param x_t:
