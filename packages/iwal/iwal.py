@@ -6,12 +6,7 @@ from typing import Any
 import numpy as np
 import packages.iwal.rejection_threshold as rt
 from scipy.stats import bernoulli
-from packages.iwal.helper import calculate_hinge_loss, calculate_log_loss
-
-
-# def test_loss_function(x, h, label, labels):
-#     loss = calculate_hinge_loss(x, h, label, labels)
-#     return loss / 100
+from sklearn.linear_model import LogisticRegression
 
 
 # done, tested
@@ -40,7 +35,7 @@ def _append_history(history: dict, x_t: np.ndarray, y_t: np.ndarray, p_t: float,
 
 
 # done, tested
-def _choose_flip_action(flip: int, selected: list, x_t: np.ndarray, y_t: np.ndarray, p_t: float, p_min: float) -> None:
+def _choose_flip_action(flip: int, selected: dict, x_t: np.ndarray, y_t: np.ndarray, p_t: float, p_min: float) -> None:
     """
     Takes an action depending on the outcome of a coin flip, where 1 indicates label is requested.
 
@@ -55,73 +50,47 @@ def _choose_flip_action(flip: int, selected: list, x_t: np.ndarray, y_t: np.ndar
     """
 
     if flip == 1:  # label is requested
+
+        # define weight for this sample
         c_t = p_min / p_t
-        selected.append((x_t, y_t, c_t))  # add to set of selected samples
+
+        # add to set of selected samples
+        selected['X'].append(x_t)
+        selected['y'].append(y_t)
+        selected['c'].append(c_t)
 
 
 # done, tested
-def _loss_summation_function(h: Any, selected: list, labels: list) -> float:
-    total = 0.0
-    for x, y, c in selected:
-        loss = calculate_hinge_loss(x, h, y, labels)  # replace with uncoupled function
-        weighted_loss = c * loss
-
-        # update total
-        total += weighted_loss
-    return total
-
-
-# done, tested
-def _get_min_hypothesis(hypothesis_space: list, selected: list, labels: list, loss_summation_function: Any) -> Any:
+def _all_labels_in_selected(selected,labels):
     """
-    Finds the min hypothesis h_t in the hypothesis space, given a set of labeled samples with weights. Minimum is
-    defined using the following formula:
 
-    h_t = argmin_{h in H} SUM_{(x,y,c) in S} c * l(h(x),y)
-
-    where H is the hypothesis space, S is the set of labeled samples, and l() is the loss_summation_function.
-
-    :param hypothesis_space:
     :param selected:
     :param labels:
-    :param loss_summation_function:
     :return:
     """
-
-    min_loss = 10000
-    min_h = None
-
-    # consider each model in hypothesis space
-    for i in range(len(hypothesis_space)):
-
-        # sum losses over all labeled elements
-        h = hypothesis_space[i]
-        loss = loss_summation_function(h, selected, labels)
-
-        # update minimum loss
-        if loss < min_loss:
-            min_loss = loss
-            min_h = h
-            # print('update minimum to coef,intercept,loss', h.coef_, h.intercept_, loss)
-    # print('min_loss is:', min_loss)
-    return min_h
+    for each in labels:
+        if each not in selected['y']:
+            return False
+    return True
 
 
 # done, testable
-def iwal_query(x_t: np.ndarray,
-               y_t: np.ndarray,
-               hypothesis_space: list,
-               history: dict,
-               selected: list,
-               labels: list,
-               rejection_threshold: str,
-               bootstrap_size: int,
-               p_min: float = 0.1) -> Any:
-    history_size = len(history['X'])
+def iwal_query(x_t: np.ndarray, y_t: np.ndarray, history: dict, selected: dict, rejection_threshold: str,
+               labels=[0,1], p_min: float = 0.1) -> Any:
+    """
 
-    # calculate probability of requesting label for x_t using the chosen rejection threshold function
+    :param x_t:
+    :param y_t:
+    :param history:
+    :param selected:
+    :param rejection_threshold:
+    :param labels:
+    :param p_min:
+    :return:
+    """
+    # calculate probability of requesting label for x_t using chosen rejection threshold function
     if rejection_threshold == 'bootstrap':
-        p_t = rt.bootstrap(x_t, hypothesis_space, bootstrap_size, history, labels, loss_function=None, p_min=p_min)
+        p_t = rt.bootstrap(x_t, history, p_min=p_min)
     else:
         raise NotImplementedError('Function does not support rejection_threshold:', rejection_threshold)
 
@@ -135,9 +104,9 @@ def iwal_query(x_t: np.ndarray,
     _choose_flip_action(Q_t, selected, x_t, y_t, p_t, p_min)
 
     # select model with least loss
-    if rejection_threshold == 'bootstrap' and history_size < bootstrap_size:  # bootstrapping in progress
-        h_t = None  # optimal hypothesis can only be calculated after bootstrapping is complete
+    if _all_labels_in_selected(selected, labels):
+        h_t = LogisticRegression().fit(selected['X'], selected['y'], sample_weight=selected['c'])
     else:
-        h_t = _get_min_hypothesis(hypothesis_space, selected, labels, _loss_summation_function)
+        h_t = None  # optimal hypothesis can't be calculated
 
     return h_t

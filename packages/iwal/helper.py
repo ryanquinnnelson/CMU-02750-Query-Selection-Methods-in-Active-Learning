@@ -25,7 +25,7 @@ def calculate_hinge_loss(x, h, label, labels):
 # done, tested
 def calculate_log_loss(x, h, label, labels):
     """
-    
+
     :param x:
     :param h:
     :param label:
