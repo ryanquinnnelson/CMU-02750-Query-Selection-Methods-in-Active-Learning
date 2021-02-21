@@ -25,7 +25,7 @@ def _append_history(history: dict, x_t: np.ndarray, y_t: np.ndarray, p_t: float,
     if 'X' in history and 'y' in history and 'c' in history and 'Q' in history:
 
         # add to history
-        history['X'].append(x_t)
+        np.append(history['X'],x_t)
         history['y'].append(y_t)
         history['c'].append(p_t)
         history['Q'].append(q_t)

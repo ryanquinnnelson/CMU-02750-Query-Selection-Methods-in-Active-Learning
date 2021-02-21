@@ -54,7 +54,7 @@ def test__bootstrap_y_has_all_labels_failure():
 
 
 def test__bootstrap_select_iid_training_set_y_not_all_labels():
-    X = np.array([[1,1], [2,2], [3,3], [4,4], [5,5], [6,6], [7,7], [8,8], [9,9], [10,10]])
+    X = np.array([[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8], [9, 9], [10, 10]])
     y = np.array([0, 1, 1, 0, 1, 0, 1, 0, 1, 1])
     labels = [0, 2]
 
@@ -64,7 +64,7 @@ def test__bootstrap_select_iid_training_set_y_not_all_labels():
 
 # not currently testing i.i.d.
 def test__bootstrap_select_iid_training_set():
-    X = np.array([[1,1], [2,2], [3,3], [4,4], [5,5], [6,6], [7,7], [8,8], [9,9], [10,10]])
+    X = np.array([[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8], [9, 9], [10, 10]])
     y = np.array([0, 1, 1, 0, 1, 0, 1, 0, 1, 1])
     labels = [0, 1]
 
@@ -78,12 +78,12 @@ def test__bootstrap_select_iid_training_set():
 
 def test__bootstrap_select_history():
     history = {
-        'X': np.array([[1,2],[2,3],[3,4],[4,5]]),
-        'y': np.array([0,1,1,0])
+        'X': np.array([[1, 2], [2, 3], [3, 4], [4, 5]]),
+        'y': np.array([0, 1, 1, 0])
     }
     bootstrap_size = 3
-    X_expected = [[1,2],[2,3],[3,4]]
-    y_expected = [0,1,1]
+    X_expected = [[1, 2], [2, 3], [3, 4]]
+    y_expected = [0, 1, 1]
     X_actual, y_actual = rt._bootstrap_select_history(history, bootstrap_size)
     assert X_actual.tolist() == X_expected
     assert y_actual.tolist() == y_expected
