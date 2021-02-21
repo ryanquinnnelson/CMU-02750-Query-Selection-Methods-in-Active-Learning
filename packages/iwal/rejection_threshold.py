@@ -149,20 +149,6 @@ def _bootstrap_select_iid_training_set(X, y, labels):
     return X[indexes], y[indexes]
 
 
-# # done, tested
-# def _bootstrap_reshape_history(X, y):
-#     """
-#     Combines list of separate samples in history to create a single data set.
-#
-#     :param X:
-#     :param y:
-#     :return:
-#     """
-#     X_arr = np.concatenate(X, axis=0)
-#     y_arr = np.concatenate(y, axis=0)
-#     return X_arr, y_arr
-
-
 # done, tested2
 def _bootstrap_select_history(history, bootstrap_size):
     """
