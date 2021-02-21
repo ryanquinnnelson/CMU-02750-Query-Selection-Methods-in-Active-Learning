@@ -20,9 +20,9 @@ def _bootstrap_loss_function(predictor, x_t, y_true, labels):
     """
 
     # get probability
-    y_prob = predictor.predict_proba(x_t)
-    loss = log_loss(y_true, y_prob, labels=labels)
-    return loss
+    y_prob = predictor.predict_proba(x_t.reshape(1, -1))
+    loss = log_loss([y_true], y_prob, labels=labels)
+    return loss/10   # hard to get loss in correct range??
 
 
 # done, tested2

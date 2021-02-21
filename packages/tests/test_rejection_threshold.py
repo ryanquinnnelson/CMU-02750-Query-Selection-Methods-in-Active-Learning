@@ -13,34 +13,6 @@ def test__bootstrap_combine_p_min_and_max_loss():
     assert actual == 0.55
 
 
-# def test__bootstrap_reshape_history_numpy_array():
-#     x1 = np.asarray([[2.59193175, 1.14706863]])
-#     x2 = np.asarray([[1.7756532, 1.15670278]])
-#     X_before = [x1, x2]
-#
-#     y1 = np.asarray([1])
-#     y2 = np.asarray([0])
-#     y_before = [y1, y2]
-#     X_after, y_after = rt._bootstrap_reshape_history(X_before, y_before)
-#
-#     assert X_after.shape == (2, 2)
-#     assert y_after.shape == (2,)
-#
-
-# def test__bootstrap_reshape_history_2d_list():
-#     x1 = [2.59193175, 1.14706863]
-#     x2 = [1.7756532, 1.15670278]
-#     X_before = [x1, x2]
-#
-#     y1 = 1
-#     y2 = 2
-#     y_before = [y1, y2]
-#     X_after, y_after = rt._bootstrap_reshape_history(X_before, y_before)
-#
-#     assert X_after.shape == (2, 2)
-#     assert y_after.shape == (2,)
-
-
 def test__bootstrap_y_has_all_labels_success():
     y = np.array([0, 1, 1, 0, 1, 0, 1, 0, 1, 1])
     labels = [0, 1]
@@ -155,10 +127,10 @@ def test__bootstrap_loss_function():
                         0])
 
     lr = LogisticRegression().fit(X_train, y_train)
-    x_t = [[3, 1]]
-    y_true = [1]
+    x_t = np.array([3, 1])
+    y_true = np.array([1])
     labels = [0, 1]
-    expected = log_loss(y_true, lr.predict_proba(x_t), labels=labels)
+    expected = log_loss(y_true, lr.predict_proba(x_t.reshape(1,-1)), labels=labels)
     actual = rt._bootstrap_loss_function(lr, x_t, y_true, labels)
     assert actual == expected
 

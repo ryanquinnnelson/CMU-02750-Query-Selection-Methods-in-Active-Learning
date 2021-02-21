@@ -20,13 +20,15 @@ def test__append_history_no_history():
     assert x_t in history['X']
     assert y_t in history['y']
     assert p_t in history['c']
+    assert history['X'].shape == (1, 2)
+    assert history['y'].shape == (1,)
     assert q_t in history['Q']
 
 
 def test__append_history_history_exists():
     history = {
-        'X': np.array([np.array([1, 3])]),
-        'y': np.array([np.array([0])]),
+        'X': np.array([[1, 3]]),
+        'y': np.array([0]),
         'c': [0.4],
         'Q': [0]
     }
@@ -42,6 +44,8 @@ def test__append_history_history_exists():
     assert y_t in history['y']
     assert p_t in history['c']
     assert q_t in history['Q']
+    assert history['X'].shape == (2, 2)
+    assert history['y'].shape == (2,)
 
 
 def test__add_to_selected_no_selected():

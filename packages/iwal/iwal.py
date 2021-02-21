@@ -28,9 +28,9 @@ def _append_history(history: dict, x_t: np.ndarray, y_t: int, p_t: float, q_t: i
         history['X'] = appended
 
     if 'y' not in history:
-        history['y'] = np.array([y_t])
+        history['y'] = np.array(y_t)
     else:
-        appended = np.append(history['y'], [y_t], axis=0)
+        appended = np.append(history['y'], y_t, axis=0)
         history['y'] = appended
 
     if 'c' not in history:
