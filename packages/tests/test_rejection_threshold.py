@@ -1,27 +1,9 @@
 import packages.iwal.rejection_threshold as rt
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import hinge_loss
+from sklearn.metrics import hinge_loss, log_loss
 from sklearn.exceptions import NotFittedError
 import pytest
 import numpy as np
-
-
-def test__bootstrap_calc_z_value():
-    x = 10
-    min_value = 1
-    max_value = 19
-    expected = 0.5
-    actual = rt._bootstrap_calc_z_value(x, min_value, max_value)
-    assert actual == expected
-
-
-def test__bootstrap_calc_z_value_zeros_only():
-    x = 10
-    min_value = 0.0
-    max_value = 0.0
-    expected = 0.0
-    actual = rt._bootstrap_calc_z_value(x, min_value, max_value)
-    assert actual == expected
 
 
 def test__bootstrap_combine_p_min_and_max_loss():
@@ -29,109 +11,6 @@ def test__bootstrap_combine_p_min_and_max_loss():
     max_loss_difference = 0.5
     actual = rt._bootstrap_combine_p_min_and_max_loss(p_min, max_loss_difference)
     assert actual == 0.55
-
-
-def test__bootstrap_combine_p_min_and_max_loss_less_than_zero():
-    p_min = 0.1
-    max_loss_difference = -0.1
-
-    with pytest.raises(ValueError):
-        rt._bootstrap_combine_p_min_and_max_loss(p_min, max_loss_difference)
-
-
-def test__bootstrap_combine_p_min_and_max_loss_more_than_one():
-    p_min = 0.1
-    max_loss_difference = 1.1
-
-    with pytest.raises(ValueError):
-        rt._bootstrap_combine_p_min_and_max_loss(p_min, max_loss_difference)
-
-
-def test__bootstrap_calc_max_loss_using_loss_function():
-    """
-    Tests the maximization functionality, not the loss_function.
-    :return:
-    """
-
-    x = 1
-    h_space = [.2, .3, .4]
-    labels = [0, 1]
-
-    def test_loss_function(x, h, label, label_list):
-        return x * h
-
-    expected = 0.2
-    actual = rt._bootstrap_calc_max_loss_using_loss_function(x, h_space, labels, test_loss_function)
-    assert actual == expected
-
-
-def test__bootstrap_calc_normalized_max_loss_difference():
-    min_loss = 1
-    max_loss = 11
-    loss_i = 10
-    loss_j = 7
-    expected = (loss_i - min_loss) / (max_loss - min_loss) - (loss_j - min_loss) / (max_loss - min_loss)
-    actual = rt._bootstrap_calc_normalized_max_loss_difference(min_loss, max_loss, loss_i, loss_j)
-
-    assert actual == expected
-
-
-def test__bootstrap_get_min_max_loss_difference():
-    # example data set
-    X1 = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
-    y1 = [1, 0]
-    lr1 = LogisticRegression().fit(X1, y1)
-
-    X2 = [[0, 0], [10, 10]]
-    y2 = [1, 0]
-    lr2 = LogisticRegression().fit(X2, y2)
-    H = [lr1, lr2]
-
-    # example labeled set
-    labels = [0, 1]
-
-    x3 = [[3, 1]]
-    y3 = [1]
-
-    df1 = lr1.decision_function(x3)
-    df2 = lr2.decision_function(x3)
-
-    hl1 = hinge_loss(y3, df1, labels=labels)  # min
-    hl2 = hinge_loss(y3, df2, labels=labels)  # max
-
-    min_loss, max_loss, max_diff_loss_i, max_diff_loss_j = rt._bootstrap_get_min_max_loss_difference(x3, H, labels)
-    assert min_loss == hl1
-    assert max_loss == hl2
-    assert max_diff_loss_i == hl2
-    assert max_diff_loss_j == hl1
-
-
-def test__bootstrap_calc_max_loss_difference_internal():
-    # example data set
-    X1 = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
-    y1 = [1, 0]
-    lr1 = LogisticRegression().fit(X1, y1)
-
-    X2 = [[0, 0], [10, 10]]
-    y2 = [1, 0]
-    lr2 = LogisticRegression().fit(X2, y2)
-    H = [lr1, lr2]
-
-    # example labeled set
-    labels = [0, 1]
-
-    x3 = [[3, 1]]
-    y3 = [1]
-
-    df1 = lr1.decision_function(x3)
-    df2 = lr2.decision_function(x3)
-
-    hl1 = hinge_loss(y3, df1, labels=labels)  # min
-    hl2 = hinge_loss(y3, df2, labels=labels)  # max
-
-    expected = 1.0
-    actual = rt._bootstrap_calc_max_loss_difference_internal(x3, H, labels)
-    assert actual == expected
 
 
 def test__bootstrap_reshape_history_numpy_array():
@@ -142,8 +21,7 @@ def test__bootstrap_reshape_history_numpy_array():
     y1 = np.asarray([1])
     y2 = np.asarray([0])
     y_before = [y1, y2]
-    history = {'X': X_before, 'y': y_before}
-    X_after, y_after = rt._bootstrap_reshape_history(history)
+    X_after, y_after = rt._bootstrap_reshape_history(X_before,y_before)
 
     assert X_after.shape == (2, 2)
     assert y_after.shape == (2,)
@@ -157,24 +35,61 @@ def test__bootstrap_reshape_history_2d_list():
     y1 = [1]
     y2 = [0]
     y_before = [y1, y2]
-    history = {'X': X_before, 'y': y_before}
-    X_after, y_after = rt._bootstrap_reshape_history(history)
+    X_after, y_after = rt._bootstrap_reshape_history(X_before,y_before)
 
     assert X_after.shape == (2, 2)
     assert y_after.shape == (2,)
+
+
+def test__bootstrap_y_has_all_labels_success():
+    y = np.array([0, 1, 1, 0, 1, 0, 1, 0, 1, 1])
+    labels = [0,1]
+    assert rt._bootstrap_y_has_all_labels(y,labels)
+
+
+def test__bootstrap_y_has_all_labels_failure():
+    y = np.array([0, 1, 1, 0, 1, 0, 1, 0, 1, 1])
+    labels = [0,1,2]
+    assert rt._bootstrap_y_has_all_labels(y,labels) is False
+
+
+def test__bootstrap_select_iid_training_set_y_not_all_labels():
+    X = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    y = np.array([0, 1, 1, 0, 1, 0, 1, 0, 1, 1])
+    labels = [0,2]
+
+    with pytest.raises(ValueError):
+        rt._bootstrap_select_iid_training_set(X, y, labels)
 
 
 # not currently testing i.i.d.
 def test__bootstrap_select_iid_training_set():
     X = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     y = np.array([0, 1, 1, 0, 1, 0, 1, 0, 1, 1])
+    labels = [0, 1]
 
-    X_train, y_train = rt._bootstrap_select_iid_training_set(X, y)
+    X_train, y_train = rt._bootstrap_select_iid_training_set(X, y, labels)
 
     assert X_train.shape[0] == X.shape[0]
     assert y_train.shape[0] == y.shape[0]
+    for label in labels:
+        assert label in y_train
 
 
+def test__bootstrap_select_history():
+    history = {
+        'X':[1,2,3,4],
+        'y':[5,6,7,8]
+    }
+    bootstrap_size = 3
+    X_expected = [1,2,3]
+    y_expected = [5,6,7]
+    X_actual,y_actual = rt._bootstrap_select_history(history, bootstrap_size)
+    assert X_actual == X_expected
+    assert y_actual == y_expected
+
+
+# not currently testing whether models are different
 def test__bootstrap_train_predictors():
     """
     Method used to check if model is fitted was sourced from:
@@ -182,12 +97,7 @@ def test__bootstrap_train_predictors():
     :return:
     """
 
-    h_space = []
-    for i in range(2):
-        lr = LogisticRegression()
-        h_space.append(lr)
-
-    X_before = [[[2.59193175, 1.14706863]],
+    X_train = [[[2.59193175, 1.14706863]],
                 [[1.7756532, 1.15670278]],
                 [[2.8032241, 0.5802936]],
                 [[1.6090616, 0.61957339]],
@@ -198,7 +108,7 @@ def test__bootstrap_train_predictors():
                 [[1.96225112, 0.68921004]],
                 [[-0.16486876, 4.62773491]]]
 
-    y_before = [[1],
+    y_train = [[1],
                 [1],
                 [1],
                 [1],
@@ -208,73 +118,119 @@ def test__bootstrap_train_predictors():
                 [0],
                 [1],
                 [0]]
-    history = {'X': X_before, 'y': y_before}
+    history = {'X': X_train, 'y': y_train}
+    bootstrap_size = 10
+    num_predictors = 3
+    labels = [0,1]
 
-    rt._bootstrap_train_predictors(h_space, history)
-
-    x = [[3, 1]]
-    for model in h_space:
+    predictors = rt._bootstrap_train_predictors(history, bootstrap_size, num_predictors,labels)
+    for predictor in predictors:
         try:
-            model.predict(x)
+            predictor.predict([[3, 1]])
         except NotFittedError:
             assert False, 'Model has not been fitted.'
 
 
-def test_bootstrap_training_size_less_than_bootstrap_size():
-    history = {'X': []}
-    b = 2
+def test__bootstrap_loss_function():
+    X_train = [[2.59193175, 1.14706863],
+               [1.7756532, 1.15670278],
+               [2.8032241, 0.5802936],
+               [1.6090616, 0.61957339],
+               [2.04921553, 5.33233847],
+               [0.50554777, 4.05210011],
+               [1.07710058, 5.32177878],
+               [0.35482006, 2.9172298],
+               [1.96225112, 0.68921004],
+               [-0.16486876, 4.62773491]]
 
-    h_space = []
-    for i in range(2):
-        lr = LogisticRegression()
-        h_space.append(lr)
+    y_train = [1,
+               1,
+               1,
+               1,
+               0,
+               0,
+               0,
+               0,
+               1,
+               0]
 
-    expected = 1.0
-    actual = rt.bootstrap(1, h_space, b, history, [0, 1])
+    lr = LogisticRegression().fit(X_train,y_train)
+    x_t = [[3,1]]
+    y_true = [1]
+    labels = [0,1]
+    expected = log_loss(y_true, lr.predict_proba(x_t),labels=labels)
+    actual = rt._bootstrap_loss_function(lr,x_t,y_true,labels)
     assert actual == expected
 
-    # should raise error because models should not be trained
-    with pytest.raises(NotFittedError):
-        for model in h_space:
-            model.predict([[3, 1]])
 
+def test__bootstrap_check_losses_success():
+    loss_i = 0.0
+    loss_j = 1.0
+    rt._bootstrap_check_losses(loss_i,loss_j)
 
-def test_bootstrap_training_size_equals_bootstrap_size():
-    X_before = [[[2.59193175, 1.14706863]],
-                [[1.7756532, 1.15670278]],
-                [[2.8032241, 0.5802936]],
-                [[1.6090616, 0.61957339]],
-                [[2.04921553, 5.33233847]],
-                [[0.50554777, 4.05210011]],
-                [[1.07710058, 5.32177878]],
-                [[0.35482006, 2.9172298]],
-                [[1.96225112, 0.68921004]],
-                [[-0.16486876, 4.62773491]]]
+def test__bootstrap_check_losses_success_failure_i_low():
+    loss_i = -0.1
+    loss_j = 1.0
 
-    y_before = [[1],
-                [1],
-                [1],
-                [1],
-                [0],
-                [0],
-                [0],
-                [0],
-                [1],
-                [0]]
-    history = {'X': X_before, 'y': y_before}
-    b = 10
+    with pytest.raises(ValueError):
+        rt._bootstrap_check_losses(loss_i,loss_j)
 
-    h_space = []
-    for i in range(2):
-        lr = LogisticRegression()
-        h_space.append(lr)
+def test__bootstrap_check_losses_success_failure_i_high():
+    loss_i = 1.1
+    loss_j = 1.0
 
-    expected = 1.0
-    actual = rt.bootstrap(1, h_space, b, history, [0, 1])
+    with pytest.raises(ValueError):
+        rt._bootstrap_check_losses(loss_i, loss_j)
+
+def test__bootstrap_check_losses_success_failure_j_low():
+    loss_i = 1.0
+    loss_j = -0.1
+
+    with pytest.raises(ValueError):
+        rt._bootstrap_check_losses(loss_i, loss_j)
+
+def test__bootstrap_check_losses_success_failure_j_high():
+    loss_i = 1.0
+    loss_j = 1.1
+
+    with pytest.raises(ValueError):
+        rt._bootstrap_check_losses(loss_i, loss_j)
+
+def test__bootstrap_calc_max_loss_using_loss_function():
+    predictors = [1,2,3,4,5]
+    test_labels = [0,1]
+    x_t = .1
+
+    def loss_function(h,x,label,labels):
+        return h*x
+
+    expected = .4
+    actual = rt._bootstrap_calc_max_loss(x_t, predictors, test_labels, loss_function)
     assert actual == expected
 
-    for model in h_space:
-        try:
-            model.predict([[3, 1]])
-        except NotFittedError:
-            assert False, 'Model has not been fitted.'
+
+def test__bootstrap_calculate_p_t_with_function():
+    predictors = [1, 2, 3, 4, 5]
+    test_labels = [0, 1]
+    x_t = .1
+    p_min = 0.3
+
+    def loss_function(h, x, label, labels):
+        return h * x
+
+    expected = .58
+    actual = rt._bootstrap_calculate_p_t(x_t, predictors, test_labels, p_min, loss_function)
+    assert actual == expected
+
+
+def test_bootstrap_history_less_than_bootstrap_size():
+    x_t = [[3,1]]
+    history = {
+        'X':[]
+    }
+    expected = 1.0
+    actual = rt.bootstrap(x_t, history)
+    assert actual == expected
+
+
+
