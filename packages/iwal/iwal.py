@@ -82,7 +82,7 @@ def _choose_flip_action(flip: int, selected: dict, x_t: np.ndarray, y_t: np.ndar
     if flip == 1:  # label is requested
 
         # define weight for this sample
-        c_t = p_min / p_t
+        c_t = 1 / p_t
 
         # add to set of selected samples
         _add_to_selected(selected, x_t, y_t, c_t)
