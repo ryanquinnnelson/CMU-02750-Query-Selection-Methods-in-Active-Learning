@@ -9,7 +9,7 @@ from scipy.stats import bernoulli
 from sklearn.linear_model import LogisticRegression
 
 
-# done, tested2
+# done, tested
 def _append_history(history: dict, x_t: np.ndarray, y_t: int, p_t: float, q_t: int) -> None:
     """
     Adds given sample to given query history dictionary.
@@ -44,8 +44,17 @@ def _append_history(history: dict, x_t: np.ndarray, y_t: int, p_t: float, q_t: i
         history['Q'].append(q_t)
 
 
-# done, tested2
+# done, tested
 def _add_to_selected(selected, x_t, y_t, c_t):
+    """
+    Adds given sample to given list of selected samples.
+
+    :param selected:
+    :param x_t:
+    :param y_t:
+    :param c_t:
+    :return:
+    """
     if 'X' not in selected:
         selected['X'] = np.array([x_t])
     else:
@@ -64,13 +73,13 @@ def _add_to_selected(selected, x_t, y_t, c_t):
         selected['c'].append(c_t)
 
 
-# done, tested2
-def _choose_flip_action(flip: int, selected: dict, x_t: np.ndarray, y_t: np.ndarray, p_t: float, p_min: float) -> None:
+# done, tested
+def _choose_flip_action(flip: int, selected: dict, x_t: np.ndarray, y_t: np.ndarray, p_t: float) -> None:
     """
     Takes an action depending on the outcome of a coin flip, where 1 indicates label is requested.
 
     Note: The paper describes c_t in two ways. Once as 1/p_t. The other as p_min/p_t. I'm not sure whether using one
-    version or the other will impact the results.
+    version or the other will impact the results. This function uses 1/p_t.
     :param flip:
     :param selected:
     :param x_t:
@@ -88,7 +97,7 @@ def _choose_flip_action(flip: int, selected: dict, x_t: np.ndarray, y_t: np.ndar
         _add_to_selected(selected, x_t, y_t, c_t)
 
 
-# done, tested2
+# done, tested
 def _all_labels_in_selected(selected, labels):
     """
 
@@ -102,9 +111,9 @@ def _all_labels_in_selected(selected, labels):
     return True
 
 
-# done, testable
+# done, tested
 def iwal_query(x_t: np.ndarray, y_t: np.ndarray, history: dict, selected: dict, rejection_threshold: str,
-               labels: list = [0, 1], p_min: float = 0.1) -> Any:
+               loss_function: Any, labels: list = [0, 1], p_min: float = 0.1) -> Any:
     """
 
     :param x_t:
@@ -112,13 +121,14 @@ def iwal_query(x_t: np.ndarray, y_t: np.ndarray, history: dict, selected: dict, 
     :param history:
     :param selected:
     :param rejection_threshold:
+    :param loss_function:
     :param labels:
     :param p_min:
     :return:
     """
     # calculate probability of requesting label for x_t using chosen rejection threshold function
     if rejection_threshold == 'bootstrap':
-        p_t = rt.bootstrap(x_t, history, p_min=p_min)
+        p_t = rt.bootstrap(x_t, history, loss_function=loss_function, p_min=p_min)
     else:
         raise NotImplementedError('Function does not support rejection_threshold:', rejection_threshold)
 
@@ -129,7 +139,7 @@ def iwal_query(x_t: np.ndarray, y_t: np.ndarray, history: dict, selected: dict, 
     _append_history(history, x_t, y_t, p_t, Q_t)
 
     # choose actions based on flip
-    _choose_flip_action(Q_t, selected, x_t, y_t, p_t, p_min)
+    _choose_flip_action(Q_t, selected, x_t, y_t, p_t)
 
     # select model with least loss
     if _all_labels_in_selected(selected, labels):
