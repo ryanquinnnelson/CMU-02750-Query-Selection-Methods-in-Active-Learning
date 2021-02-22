@@ -20,7 +20,7 @@ def _bootstrap_check_losses(loss_i, loss_j):
         raise ValueError('Loss must be within range [0,1]:', loss_i, loss_j)
 
 
-# done
+# done, tested
 def _bootstrap_calc_max_loss(x_t, predictors, labels, loss_function):
     """
     Uses supplied loss_function to calculate the max loss difference.
@@ -110,7 +110,7 @@ def _bootstrap_y_has_all_labels(y, labels):
     return True
 
 
-# done
+# done, tested
 def _bootstrap_select_iid_training_set(X, y, labels):
     """
     Selects n random samples from the given data set, with replacement, where n is equal to the length of the data set.
@@ -131,7 +131,7 @@ def _bootstrap_select_iid_training_set(X, y, labels):
     return X[indexes], y[indexes]
 
 
-# done
+# done, tested
 def _bootstrap_select_bootstrap_training_set(history, bootstrap_size):
     """
 
@@ -144,7 +144,7 @@ def _bootstrap_select_bootstrap_training_set(history, bootstrap_size):
     return X_history, y_history
 
 
-# done
+# done, tested
 def _bootstrap_train_predictors(history, bootstrap_size, num_predictors, labels):
     """
     Trains all predictors in the hypothesis space using bootstrapping. If training

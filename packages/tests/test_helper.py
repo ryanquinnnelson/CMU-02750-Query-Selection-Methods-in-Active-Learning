@@ -48,3 +48,38 @@ def test_calculate_log_loss():
     loss = log_loss(y_true, y_pred, labels=labels)
 
     assert loss == packages.iwal.helper.calculate_log_loss(x, h, y_true, labels)
+
+
+#
+# def test__bootstrap_loss_function():
+#     X_train = np.array([[2.59193175, 1.14706863],
+#                         [1.7756532, 1.15670278],
+#                         [2.8032241, 0.5802936],
+#                         [1.6090616, 0.61957339],
+#                         [2.04921553, 5.33233847],
+#                         [0.50554777, 4.05210011],
+#                         [1.07710058, 5.32177878],
+#                         [0.35482006, 2.9172298],
+#                         [1.96225112, 0.68921004],
+#                         [-0.16486876, 4.62773491]])
+#
+#     y_train = np.array([1,
+#                         1,
+#                         1,
+#                         1,
+#                         0,
+#                         0,
+#                         0,
+#                         0,
+#                         1,
+#                         0])
+#
+#     lr = LogisticRegression().fit(X_train, y_train)
+#     x_t = np.array([3, 1])
+#     y_true = np.array([1])
+#     labels = [0, 1]
+#     expected = log_loss(y_true, lr.predict_proba(x_t.reshape(1,-1)), labels=labels)
+#     actual = rt._bootstrap_loss_function(lr, x_t, y_true, labels)
+#     assert actual == expected
+#
+#
