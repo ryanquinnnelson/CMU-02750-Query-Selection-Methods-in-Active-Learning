@@ -1,8 +1,6 @@
 from sklearn.exceptions import NotFittedError
 
 import packages.iwal.iwal as iw
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import hinge_loss
 import numpy as np
 import pytest
 
