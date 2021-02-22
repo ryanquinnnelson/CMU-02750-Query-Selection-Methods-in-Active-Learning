@@ -115,7 +115,7 @@ def test_normalized_hinge_loss_3_first_binary_label():
     # labels
     labels = [0, 1]
 
-    expected = 3.7757232135061716 / 4.0
+    expected = 3.7757232135061716 / 10.0
     actual = lf.normalized_hinge_loss_3(lr, x, y, labels)
     assert actual == expected
 

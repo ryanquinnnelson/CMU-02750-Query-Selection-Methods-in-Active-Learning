@@ -74,9 +74,9 @@ def normalized_hinge_loss_3(predictor, x, y, labels):
     # get decision
     y_true = np.full(shape=len(x_reshape), fill_value=y, dtype=np.int)
     y_dec = predictor.decision_function(x_reshape)
-    print(y_dec)
+
     # calculate loss
     loss = hinge_loss(y_true, y_dec, labels=labels)
-    normalized = loss / 4.0  # to ensure loss is in [0,1]
+    normalized = loss / 10.0  # to ensure loss is in [0,1]
 
     return normalized
