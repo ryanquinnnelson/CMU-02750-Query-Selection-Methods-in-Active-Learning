@@ -1,6 +1,4 @@
 import packages.iwal.rejection_threshold as rt
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import hinge_loss, log_loss
 from sklearn.exceptions import NotFittedError
 import pytest
 import numpy as np
@@ -169,8 +167,6 @@ def test__bootstrap_train_predictors_y_does_not_contain_all_labels():
     assert len(predictors) == 0
 
 
-
-
 def test__bootstrap_calc_max_loss():
     predictors = [1, 2, 3, 4, 5]
     test_labels = [0, 1]
@@ -190,7 +186,7 @@ def test__bootstrap_calc_max_loss_loss_difference_outside_bounds():
     x_t = .1
 
     def loss_function(h, x, label, labels):
-        return 100*x*h
+        return 100 * x * h
 
     with pytest.raises(ValueError):
         rt._bootstrap_calc_max_loss(x_t, predictors, test_labels, loss_function)
@@ -236,5 +232,5 @@ def test_bootstrap():
         return label * y_pred
 
     expected = 0.1
-    actual = rt.bootstrap(x_t, history,loss_function )
+    actual = rt.bootstrap(x_t, history, loss_function)
     assert actual == expected

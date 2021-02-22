@@ -2,10 +2,8 @@
 Implements rejection-threshold functions for the Importance Weighting Active Learning (IWAL) algorithm defined in
 the paper by Beygelzimer et al. See https://arxiv.org/pdf/0812.4952.pdf.
 """
-
 import numpy as np
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import hinge_loss, log_loss
 
 
 # done, tested
