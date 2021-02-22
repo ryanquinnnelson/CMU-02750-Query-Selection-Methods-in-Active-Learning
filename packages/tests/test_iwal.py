@@ -132,7 +132,7 @@ def test__choose_flip_action_heads():
     iw._choose_flip_action(Q_t, s, x_t, y_t, p_t, p_min)
     assert len(s['X']) == 1
     c_t = s['c'][0]
-    assert c_t == p_min / p_t
+    assert c_t == 1 / p_t
 
 
 def test__choose_flip_action_tails():
