@@ -3,6 +3,23 @@ import packages.iwal.helper
 from sklearn.metrics import hinge_loss, log_loss
 
 
+# done, tested2
+def _bootstrap_loss_function(predictor, x_t, y_true, labels):
+    """
+
+    :param predictor:
+    :param x_t:
+    :param y_true:
+    :param labels:
+    :return:
+    """
+
+    # get probability
+    y_prob = predictor.predict_proba(x_t.reshape(1, -1))
+    loss = log_loss([y_true], y_prob, labels=labels)
+    return loss/10   # hard to get loss in correct range??
+
+
 def test_calculate_hinge_loss():
     X_train = [[2.59193175, 1.14706863], [1.7756532, 1.15670278]]
     y_train = [1, 0]

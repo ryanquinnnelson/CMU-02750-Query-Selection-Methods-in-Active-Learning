@@ -8,24 +8,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import hinge_loss, log_loss
 
 
-# done, tested2
-def _bootstrap_loss_function(predictor, x_t, y_true, labels):
-    """
-
-    :param predictor:
-    :param x_t:
-    :param y_true:
-    :param labels:
-    :return:
-    """
-
-    # get probability
-    y_prob = predictor.predict_proba(x_t.reshape(1, -1))
-    loss = log_loss([y_true], y_prob, labels=labels)
-    return loss/10   # hard to get loss in correct range??
-
-
-# done, tested2
+# done, tested
 def _bootstrap_check_losses(loss_i, loss_j):
     """
 
@@ -37,7 +20,7 @@ def _bootstrap_check_losses(loss_i, loss_j):
         raise ValueError('Loss must be within range [0,1]:', loss_i, loss_j)
 
 
-# done, tested2
+# done
 def _bootstrap_calc_max_loss(x_t, predictors, labels, loss_function):
     """
     Uses supplied loss_function to calculate the max loss difference.
@@ -48,7 +31,7 @@ def _bootstrap_calc_max_loss(x_t, predictors, labels, loss_function):
     :return:
     """
 
-    max_diff = -10000
+    max_diff = -10000  # arbitrary starting value
 
     # consider every pair of models in the hypothesis space combined with every label
     for i in range(len(predictors)):
@@ -71,7 +54,7 @@ def _bootstrap_calc_max_loss(x_t, predictors, labels, loss_function):
     return max_diff
 
 
-# done, tested2
+# done, tested
 def _bootstrap_combine_p_min_and_max_loss(p_min, max_loss_difference):
     """
     Performs final calculation for rejection threshold probability p_t using the following formula:
@@ -84,10 +67,11 @@ def _bootstrap_combine_p_min_and_max_loss(p_min, max_loss_difference):
     return p_min + (1 - p_min) * max_loss_difference
 
 
-# done, need to test second case
+# done
 def _bootstrap_calculate_p_t(x_t, predictors, labels, p_min, loss_function):
     """
     Calculates the rejection threshold probability p_t.
+    If predictors is empty, p_t is set to 1.
     :param x_t:
     :param predictors:
     :param labels:
@@ -96,19 +80,21 @@ def _bootstrap_calculate_p_t(x_t, predictors, labels, p_min, loss_function):
     :return:
     """
 
-    # calculate max loss difference
-    if loss_function:
-        max_loss_diff = _bootstrap_calc_max_loss(x_t, predictors, labels, loss_function)
-    else:
-        max_loss_diff = _bootstrap_calc_max_loss(x_t, predictors, labels, _bootstrap_loss_function)
+    if len(predictors) > 0:
 
-    # use max loss difference to calculate p_t
-    p_t = _bootstrap_combine_p_min_and_max_loss(p_min, max_loss_diff)
+        # calculate probability
+        max_loss_diff = _bootstrap_calc_max_loss(x_t, predictors, labels, loss_function)
+        p_t = _bootstrap_combine_p_min_and_max_loss(p_min, max_loss_diff)
+
+    else:
+
+        # default value is used
+        p_t = 1.0
 
     return p_t
 
 
-# done, tested2
+# done, tested
 def _bootstrap_y_has_all_labels(y, labels):
     """
 
@@ -124,7 +110,7 @@ def _bootstrap_y_has_all_labels(y, labels):
     return True
 
 
-# done, tested2
+# done
 def _bootstrap_select_iid_training_set(X, y, labels):
     """
     Selects n random samples from the given data set, with replacement, where n is equal to the length of the data set.
@@ -133,14 +119,10 @@ def _bootstrap_select_iid_training_set(X, y, labels):
     :param y:
     :return:
     """
-    n = len(X)
 
-    # confirm y contains all labels expected in the data set
-    y_contains_all_labels = _bootstrap_y_has_all_labels(y, labels)
-    if not y_contains_all_labels:
-        raise ValueError('y does not contain all labels expected in the data set.')
+    n = len(X)  # size of desired training set
 
-    # build a training set that contains
+    # build a training set that contains all labels expected in the data set
     training_has_all_labels = False
     while not training_has_all_labels:
         indexes = np.random.choice(n, n, replace=True)  # select n indices from a range of 0 to n-1
@@ -149,8 +131,8 @@ def _bootstrap_select_iid_training_set(X, y, labels):
     return X[indexes], y[indexes]
 
 
-# done, tested2
-def _bootstrap_select_history(history, bootstrap_size):
+# done
+def _bootstrap_select_bootstrap_training_set(history, bootstrap_size):
     """
 
     :param history:
@@ -162,10 +144,15 @@ def _bootstrap_select_history(history, bootstrap_size):
     return X_history, y_history
 
 
-# done, tested2
+# done
 def _bootstrap_train_predictors(history, bootstrap_size, num_predictors, labels):
     """
-    Trains all predictors in the hypothesis space using bootstrapping.
+    Trains all predictors in the hypothesis space using bootstrapping. If training
+    select selected from history does not contain all labels expected in the data, no predictors are trained.
+
+    Note 1 - Bootstrapping process:
+    To generate a diverse hypothesis space, each predictor is trained on a set of examples selected i.i.d. (at random
+    with replacement) from the set of samples in history.
 
     :param history:
     :param bootstrap_size:
@@ -174,31 +161,27 @@ def _bootstrap_train_predictors(history, bootstrap_size, num_predictors, labels)
     :return:
     """
 
-    # select training set to be used for bootstrapping
-    X_history, y_history = _bootstrap_select_history(history, bootstrap_size)
-    # X, y = _bootstrap_reshape_history(X_history, y_history)
+    # limit training set to predetermined portion of history
+    X_train, y_train = _bootstrap_select_bootstrap_training_set(history, bootstrap_size)
 
-    # train predictors
     predictors = []
-    for i in range(num_predictors):
-        X_train, y_train = _bootstrap_select_iid_training_set(X_history, y_history, labels)
-        lr = LogisticRegression().fit(X_train, y_train)
-        predictors.append(lr)
+    if _bootstrap_y_has_all_labels(y_train, labels):
+
+        # train predictors
+        for i in range(num_predictors):
+            X_iid, y_iid = _bootstrap_select_iid_training_set(X_train, y_train, labels)
+            lr = LogisticRegression().fit(X_iid, y_iid)
+            predictors.append(lr)
 
     return predictors
 
 
-# done, need to test second case
-def bootstrap(x_t, history, bootstrap_size=10, num_predictors=10, labels=[0, 1], p_min=0.1, loss_function=None):
+# done
+def bootstrap(x_t, history, loss_function, bootstrap_size=10, num_predictors=10, labels=[0, 1], p_min=0.1):
     """
     This function implements Algorithm 3 from the paper by Beygelzimer et al. See https://arxiv.org/pdf/0812.4952.pdf.
     Uses bootstrapping to generate a hypothesis space and calculates rejection threshold probability p_t for unlabeled
     sample x_t.
-
-    Note 1 - Bootstrapping process:
-    To generate a diverse hypothesis space, each predictor is trained on a set of examples selected i.i.d. (at random
-    with replacement) from the set of samples in history. At the time of bootstrapping, the number of samples in history
-    is equal to the bootstrap size.
     :param x_t:
     :param history:
     :param bootstrap_size:
@@ -216,7 +199,7 @@ def bootstrap(x_t, history, bootstrap_size=10, num_predictors=10, labels=[0, 1],
 
     if training_size < bootstrap_size:  # bootstrapping process is not complete
 
-        p_t = 1.0  # sample will be used for training and should be added to selected set
+        p_t = 1.0  # sample will be used for bootstrapping and should be added to selected set
 
     else:
         # create bootstrapped committee of predictors
