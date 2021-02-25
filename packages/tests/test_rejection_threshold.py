@@ -42,6 +42,31 @@ def test__bootstrap_check_losses_success_failure_j_high():
         rt._bootstrap_check_losses(loss_i, loss_j)
 
 
+def test__bootstrap_calc_max_loss():
+    predictors = [1, 2, 3, 4, 5]
+    test_labels = [0, 1]
+    x_t = .1
+
+    def loss_function(h, x, label, labels):
+        return h * x
+
+    expected = .4
+    actual = rt._bootstrap_calc_max_loss(x_t, predictors, test_labels, loss_function)
+    assert actual == expected
+
+
+def test__bootstrap_calc_max_loss_loss_difference_outside_bounds():
+    predictors = [1, 2, 3, 4, 5]
+    test_labels = [0, 1]
+    x_t = .1
+
+    def loss_function(h, x, label, labels):
+        return 100 * x * h
+
+    with pytest.raises(ValueError):
+        rt._bootstrap_calc_max_loss(x_t, predictors, test_labels, loss_function)
+
+
 def test__bootstrap_combine_p_min_and_max_loss():
     p_min = 0.1
     max_loss_difference = 0.5
@@ -75,7 +100,7 @@ def test__bootstrap_select_iid_training_set():
         assert label in y_train
 
 
-def test__bootstrap_select_history():
+def test__bootstrap_select_bootstrap_training_set():
     history = {
         'X': np.array([[1, 2], [2, 3], [3, 4], [4, 5]]),
         'y': np.array([0, 1, 1, 0])
@@ -165,31 +190,6 @@ def test__bootstrap_train_predictors_y_does_not_contain_all_labels():
 
     predictors = rt._bootstrap_train_predictors(history, bootstrap_size, num_predictors, labels)
     assert len(predictors) == 0
-
-
-def test__bootstrap_calc_max_loss():
-    predictors = [1, 2, 3, 4, 5]
-    test_labels = [0, 1]
-    x_t = .1
-
-    def loss_function(h, x, label, labels):
-        return h * x
-
-    expected = .4
-    actual = rt._bootstrap_calc_max_loss(x_t, predictors, test_labels, loss_function)
-    assert actual == expected
-
-
-def test__bootstrap_calc_max_loss_loss_difference_outside_bounds():
-    predictors = [1, 2, 3, 4, 5]
-    test_labels = [0, 1]
-    x_t = .1
-
-    def loss_function(h, x, label, labels):
-        return 100 * x * h
-
-    with pytest.raises(ValueError):
-        rt._bootstrap_calc_max_loss(x_t, predictors, test_labels, loss_function)
 
 
 def test_bootstrap_history_less_than_bootstrap_size():

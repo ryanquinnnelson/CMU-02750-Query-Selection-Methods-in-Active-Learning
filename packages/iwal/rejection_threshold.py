@@ -6,7 +6,6 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 
 
-# done, tested
 def _bootstrap_check_losses(loss_i, loss_j):
     """
 
@@ -18,7 +17,6 @@ def _bootstrap_check_losses(loss_i, loss_j):
         raise ValueError('Loss must be within range [0,1]:', loss_i, loss_j)
 
 
-# done, tested
 def _bootstrap_calc_max_loss(x_t, predictors, labels, loss_function):
     """
     Uses supplied loss_function to calculate the max loss difference.
@@ -52,7 +50,6 @@ def _bootstrap_calc_max_loss(x_t, predictors, labels, loss_function):
     return max_diff
 
 
-# done, tested
 def _bootstrap_combine_p_min_and_max_loss(p_min, max_loss_difference):
     """
     Performs final calculation for rejection threshold probability p_t using the following formula:
@@ -65,7 +62,7 @@ def _bootstrap_combine_p_min_and_max_loss(p_min, max_loss_difference):
     return p_min + (1 - p_min) * max_loss_difference
 
 
-# done
+# to be tested
 def _bootstrap_calculate_p_t(x_t, predictors, labels, p_min, loss_function):
     """
     Calculates the rejection threshold probability p_t.
@@ -92,7 +89,6 @@ def _bootstrap_calculate_p_t(x_t, predictors, labels, p_min, loss_function):
     return p_t
 
 
-# done, tested
 def _bootstrap_y_has_all_labels(y, labels):
     """
 
@@ -108,7 +104,6 @@ def _bootstrap_y_has_all_labels(y, labels):
     return True
 
 
-# done, tested
 def _bootstrap_select_iid_training_set(X, y, labels):
     """
     Selects n random samples from the given data set, with replacement, where n is equal to the length of the data set.
@@ -129,7 +124,6 @@ def _bootstrap_select_iid_training_set(X, y, labels):
     return X[indexes], y[indexes]
 
 
-# done, tested
 def _bootstrap_select_bootstrap_training_set(history, bootstrap_size):
     """
 
@@ -142,7 +136,6 @@ def _bootstrap_select_bootstrap_training_set(history, bootstrap_size):
     return X_history, y_history
 
 
-# done, tested
 def _bootstrap_train_predictors(history, bootstrap_size, num_predictors, labels):
     """
     Trains all predictors in the hypothesis space using bootstrapping. If training
@@ -174,7 +167,6 @@ def _bootstrap_train_predictors(history, bootstrap_size, num_predictors, labels)
     return predictors
 
 
-# done
 def bootstrap(x_t, history, loss_function, bootstrap_size=10, num_predictors=10, labels=[0, 1], p_min=0.1):
     """
     This function implements Algorithm 3 from the paper by Beygelzimer et al. See https://arxiv.org/pdf/0812.4952.pdf.
