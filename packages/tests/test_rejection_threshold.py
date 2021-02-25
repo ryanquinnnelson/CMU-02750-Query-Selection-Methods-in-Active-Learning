@@ -1,3 +1,7 @@
+"""
+Unit tests for rejection_threshold module in the iwal package.
+"""
+
 import packages.iwal.rejection_threshold as rt
 from sklearn.exceptions import NotFittedError
 import pytest

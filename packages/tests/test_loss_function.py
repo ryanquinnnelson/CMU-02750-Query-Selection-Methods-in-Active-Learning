@@ -1,12 +1,13 @@
+"""
+Unit tests for loss_function module in the iwal package.
+"""
+
 from sklearn.linear_model import LogisticRegression
 import packages.iwal.loss_function as lf
-from sklearn.metrics import hinge_loss
 import numpy as np
 
 
-
 def test_normalized_hinge_loss_1_first_binary_label():
-
     # prepare predictor
     X_train = np.array([[2.59193175, 1.14706863],
                         [1.7756532, 1.15670278],
@@ -118,5 +119,3 @@ def test_normalized_hinge_loss_3_first_binary_label():
     expected = 3.7757232135061716 / 10.0
     actual = lf.normalized_hinge_loss_3(lr, x, y, labels)
     assert actual == expected
-
-

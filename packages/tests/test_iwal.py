@@ -1,8 +1,11 @@
-from sklearn.exceptions import NotFittedError
+"""
+Unit tests for iwal module in the iwal package.
+"""
 
 import packages.iwal.iwal as iw
 import numpy as np
 import pytest
+from sklearn.exceptions import NotFittedError
 
 
 def test__append_history_no_history():
