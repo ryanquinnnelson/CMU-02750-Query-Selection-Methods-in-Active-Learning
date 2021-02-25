@@ -3,31 +3,39 @@ Implements rejection-threshold functions for the Importance Weighting Active Lea
 the paper by Beygelzimer et al. See https://arxiv.org/pdf/0812.4952.pdf.
 """
 import numpy as np
+from typing import Any, Tuple
 from sklearn.linear_model import LogisticRegression
 
 
-def _bootstrap_check_losses(loss_i, loss_j):
+def _bootstrap_check_losses(loss_i: float, loss_j: float) -> None:
     """
-
-    :param loss_i:
-    :param loss_j:
-    :return:
+    Checks whether given loss values are in [0,1]. Raises ValueError if values are outside this expected range.
+    :param loss_i: Loss from predictor i.
+    :param loss_j: Loss from predictor j.
+    :return: None
     """
     if loss_i < 0.0 or loss_i > 1.0 or loss_j < 0.0 or loss_j > 1.0:
         raise ValueError('Loss must be within range [0,1]:', loss_i, loss_j)
 
 
-def _bootstrap_calc_max_loss(x_t, predictors, labels, loss_function):
+def _bootstrap_calc_max_loss(x_t: np.ndarray, predictors: list, labels: list, loss_function: Any) -> float:
     """
-    Uses supplied loss_function to calculate the max loss difference.
-    :param x_t:
-    :param predictors:
-    :param labels:
-    :param loss_function:
-    :return:
+    Calculates the maximum loss difference, considering every pair of predictors in the hypothesis space and every
+    possible label.
+
+    :param x_t: (2,) numpy array representing sample data point.
+    :param predictors: List of predictors in the hypothesis space.
+    :param labels: List of all possible labels for the data set.
+    :param loss_function: Python function which calculates loss normalized to [0,1] range. The following signature is
+                          expected: function_name(predictor:Any, x_t:np.ndarray, label:Any, labels:list) -> Float.
+                          predictor: sklearn model;
+                          x_t: (2,) numpy array representing sample data point;
+                          label: single label from list of labels;
+                          labels: List of all possible labels for the data set.
+    :return: Float representing the maximum loss difference.
     """
 
-    max_diff = -10000  # arbitrary starting value
+    max_diff = -10000.0  # arbitrary starting value
 
     # consider every pair of models in the hypothesis space combined with every label
     for i in range(len(predictors)):
@@ -50,29 +58,36 @@ def _bootstrap_calc_max_loss(x_t, predictors, labels, loss_function):
     return max_diff
 
 
-def _bootstrap_combine_p_min_and_max_loss(p_min, max_loss_difference):
+def _bootstrap_combine_p_min_and_max_loss(p_min: float, max_loss_difference: float) -> float:
     """
     Performs final calculation for rejection threshold probability p_t using the following formula:
 
     p_t = p_min + (1 - p_min) * max_loss_difference
-    :param p_min:
-    :param max_loss_difference:
-    :return:
+    :param p_min: Minimum probability for selecting a sample for labeling.
+    :param max_loss_difference: Float representing the maximum loss difference considering all models and labels.
+    :return: Float representing the rejection threshold probability. Value is in [0,1].
     """
     return p_min + (1 - p_min) * max_loss_difference
 
 
 # to be tested
-def _bootstrap_calculate_p_t(x_t, predictors, labels, p_min, loss_function):
+def _bootstrap_calculate_p_t(x_t: np.ndarray, predictors: list, labels: list, p_min: float,
+                             loss_function: Any) -> float:
     """
-    Calculates the rejection threshold probability p_t.
-    If predictors is empty, p_t is set to 1.
-    :param x_t:
-    :param predictors:
-    :param labels:
-    :param p_min:
-    :param loss_function:
-    :return:
+    Calculates the rejection threshold probability p_t as defined by IWAL.
+    Note: If list of predictors is empty, p_t is set to 1.0.
+
+    :param x_t: (2,) numpy array representing sample data point.
+    :param predictors: List of predictors in the hypothesis space.
+    :param labels: List of all possible labels for the data set.
+    :param p_min: Minimum probability for selecting a sample for labeling.
+    :param loss_function: Python function which calculates loss normalized to [0,1] range. The following signature is
+                          expected: function_name(predictor:Any, x_t:np.ndarray, label:Any, labels:list) -> Float.
+                          predictor: sklearn model;
+                          x_t: (2,) numpy array representing sample data point;
+                          label: single label from list of labels;
+                          labels: List of all possible labels for the data set.
+    :return: Float representing the rejection threshold probability. Value is in [0,1].
     """
 
     if len(predictors) > 0:
@@ -89,12 +104,12 @@ def _bootstrap_calculate_p_t(x_t, predictors, labels, p_min, loss_function):
     return p_t
 
 
-def _bootstrap_y_has_all_labels(y, labels):
+def _bootstrap_y_has_all_labels(y: np.ndarray, labels: list) -> bool:
     """
-
-    :param y:
-    :param labels:
-    :return:
+    Determines whether all labels are found in the array of selected labels.
+    :param y_t: (n,) numpy array representing labels for n samples.
+    :param labels: List of all possible labels for the data set.
+    :return: True if all labels are found, False otherwise.
     """
 
     for label in labels:
@@ -104,13 +119,16 @@ def _bootstrap_y_has_all_labels(y, labels):
     return True
 
 
-def _bootstrap_select_iid_training_set(X, y, labels):
+def _bootstrap_select_iid_training_set(X: np.ndarray, y: np.ndarray, labels: list) -> Tuple[np.ndarray, np.ndarray]:
     """
     Selects n random samples from the given data set, with replacement, where n is equal to the length of the data set.
+    Note: If the selected training dataset is found to be missing labels, a new dataset is drawn from the same
+    underlying distribution. This process is repeated until an i.i.d. training set with all labels is found.
 
-    :param X:
-    :param y:
-    :return:
+    :param X: (n,2) numpy array representing data points for n samples.
+    :param y_t: (n,) numpy array representing labels for n samples.
+    :return: (np.ndarray, np.ndarray) Tuple containing (X_train,y_train), where X_train is a numpy array of sample
+             features and y_train is a numpy array of labels.
     """
 
     n = len(X)  # size of desired training set
@@ -124,32 +142,42 @@ def _bootstrap_select_iid_training_set(X, y, labels):
     return X[indexes], y[indexes]
 
 
-def _bootstrap_select_bootstrap_training_set(history, bootstrap_size):
+def _bootstrap_select_bootstrap_training_set(history: dict, bootstrap_size: int) -> Tuple[np.ndarray, np.ndarray]:
     """
-
-    :param history:
-    :param bootstrap_size:
-    :return:
+    Selects first b samples from query history, where b is the bootstrap_size.
+    :param history: Dictionary containing query history. Expected to be empty or contain four keys: 'X','y','c','Q'.
+                    'X' contains a numpy array (n,2) where each row represents a sample and n is the number of
+                    queries made so far. 'y' contains a numpy array (n,) where each row represents a sample label.
+                    'c' contains a list where each element represents the probability a sample was selected for
+                    labeling. 'Q' contains a list where each element represents the 0-1 result of a coin flip.
+    :param bootstrap_size: Number of samples to be used in bootstrapping.
+    :return: (np.ndarray, np.ndarray) Tuple containing (X_train,y_train), where X_train is a numpy array of sample
+             features and y_train is a numpy array of labels.
     """
     X_history = history['X'][:bootstrap_size]
     y_history = history['y'][:bootstrap_size]
     return X_history, y_history
 
 
-def _bootstrap_train_predictors(history, bootstrap_size, num_predictors, labels):
+def _bootstrap_train_predictors(history: dict, bootstrap_size: int, num_predictors: int, labels: list) -> list:
     """
-    Trains all predictors in the hypothesis space using bootstrapping. If training
-    select selected from history does not contain all labels expected in the data, no predictors are trained.
+    Trains p predictors to be used in the rejection threshold bootstrap algorithm, where p is the number of predictors.
+    Each predictor is trained on an i.i.d. dataset of b samples drawn from query history, where b is the bootstrap size.
+    If the training set selected from history does not contain all labels, no predictors are trained and an empty list
+    is returned.
 
-    Note 1 - Bootstrapping process:
-    To generate a diverse hypothesis space, each predictor is trained on a set of examples selected i.i.d. (at random
-    with replacement) from the set of samples in history.
+    Note: The bootstrapping process occurs as follows. To generate a diverse hypothesis space, each predictor is
+    trained on a set of examples selected i.i.d. (at random with replacement) from the same training set.
 
-    :param history:
-    :param bootstrap_size:
-    :param num_predictors:
-    :param labels:
-    :return:
+    :param history: Dictionary containing query history. Expected to be empty or contain four keys: 'X','y','c','Q'.
+                    'X' contains a numpy array (n,2) where each row represents a sample and n is the number of
+                    queries made so far. 'y' contains a numpy array (n,) where each row represents a sample label.
+                    'c' contains a list where each element represents the probability a sample was selected for
+                    labeling. 'Q' contains a list where each element represents the 0-1 result of a coin flip.
+    :param bootstrap_size: Number of samples to be used in bootstrapping.
+    :param num_predictors: Number of predictors to be trained.
+    :param labels: List of all possible labels for the data set.
+    :return: List of predictors trained using the training set.
     """
 
     # limit training set to predetermined portion of history
@@ -167,19 +195,30 @@ def _bootstrap_train_predictors(history, bootstrap_size, num_predictors, labels)
     return predictors
 
 
-def bootstrap(x_t, history, loss_function, bootstrap_size=10, num_predictors=10, labels=[0, 1], p_min=0.1):
+def bootstrap(x_t: np.ndarray, history: dict, loss_function: Any, bootstrap_size: int = 10, num_predictors: int = 10,
+              labels: list = [0, 1], p_min: float = 0.1) -> float:
     """
     This function implements Algorithm 3 from the paper by Beygelzimer et al. See https://arxiv.org/pdf/0812.4952.pdf.
     Uses bootstrapping to generate a hypothesis space and calculates rejection threshold probability p_t for unlabeled
     sample x_t.
-    :param x_t:
-    :param history:
-    :param bootstrap_size:
-    :param num_predictors:
-    :param labels:
-    :param p_min:
-    :param loss_function:
-    :return:
+
+    :param x_t: (2,) numpy array representing sample data point.
+    :param history: Dictionary containing query history. Expected to be empty or contain four keys: 'X','y','c','Q'.
+                    'X' contains a numpy array (n,2) where each row represents a sample and n is the number of
+                    queries made so far. 'y' contains a numpy array (n,) where each row represents a sample label.
+                    'c' contains a list where each element represents the probability a sample was selected for
+                    labeling. 'Q' contains a list where each element represents the 0-1 result of a coin flip.
+    :param bootstrap_size: Number of samples to be used in bootstrapping.
+    :param num_predictors: Number of predictors to be trained.
+    :param labels: List of all possible labels for the data set.
+    :param p_min: Minimum probability for selecting a sample for labeling. Default value is 0.1.
+    :param loss_function: Python function which calculates loss normalized to [0,1] range. The following signature is
+                          expected: function_name(predictor:Any, x_t:np.ndarray, label:Any, labels:list) -> Float.
+                          predictor: sklearn model;
+                          x_t: (2,) numpy array representing sample data point;
+                          label: single label from list of labels;
+                          labels: List of all possible labels for the data set.
+    :return: Float representing the rejection threshold probability. Value is in [0,1].
     """
     # actions depend on current training size and bootstrap size
     if 'X' in history:

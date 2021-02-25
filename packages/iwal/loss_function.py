@@ -1,8 +1,8 @@
 """
 Defines loss functions to be used in package.
 """
-from sklearn.metrics import hinge_loss
 import numpy as np
+from sklearn.metrics import hinge_loss
 
 
 def normalized_hinge_loss_1(predictor, x, y, labels):
