@@ -200,7 +200,9 @@ def bootstrap(x_t: np.ndarray, history: dict, loss_function: Any, bootstrap_size
     """
     This function implements Algorithm 3 from the paper by Beygelzimer et al. See https://arxiv.org/pdf/0812.4952.pdf.
     Uses bootstrapping to generate a hypothesis space and calculates rejection threshold probability p_t for unlabeled
-    sample x_t.
+    sample x_t:
+
+    p_t = p_min + (1 - p_min) * max_{y in Y, h_i, h_j in H}{l(h_i(x),y) - l(h_j(x),y)}
 
     :param x_t: (2,) numpy array representing sample data point.
     :param history: Dictionary containing query history. Expected to be empty or contain four keys: 'X','y','c','Q'.
