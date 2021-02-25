@@ -2,25 +2,33 @@
 Implements Importance Weighting Active Learning (IWAL) algorithm from the paper by Beygelzimer et al.
 See https://arxiv.org/pdf/0812.4952.pdf.
 """
-from typing import Any
 import numpy as np
 import packages.iwal.rejection_threshold as rt
+import packages.iwal.loss_function as lf
+from typing import Any
 from scipy.stats import bernoulli
 from sklearn.linear_model import LogisticRegression
 
 
-# done, tested
 def _append_history(history: dict, x_t: np.ndarray, y_t: int, p_t: float, q_t: int) -> None:
     """
-    Adds given sample to given query history dictionary.
+    Adds given sample to query history dictionary. If dictionary is empty, initializes key-value pairs for the four
+    tracked categories.
 
-    :param history:
-    :param x_t:
-    :param y_t:
-    :param p_t:
-    :param q_t:
-    :return:
+
+    :param history: Dictionary containing query history. Expected to be empty or contain four keys: 'X','y','c','Q'.
+                    'X' contains a numpy array (n,2) where each row represents a sample and n is the number of
+                    queries made so far. 'y' contains a numpy array (n,) where each row represents a sample label.
+                    'c' contains a list where each element represents the probability a sample was selected for
+                    labeling. 'Q' contains a list where each element represents the 0-1 result of a coin flip.
+
+    :param x_t: (2,) numpy array representing sample data point.
+    :param y_t: (1,) numpy array representing sample label.
+    :param p_t: Float representing probability of selecting sample for labeling.
+    :param q_t: Integer result of coin flip deciding whether to select sample for labeling. 1 if selected, 0 otherwise.
+    :return: None
     """
+
     if 'X' not in history:
         history['X'] = np.array([x_t])
     else:
@@ -44,16 +52,18 @@ def _append_history(history: dict, x_t: np.ndarray, y_t: int, p_t: float, q_t: i
         history['Q'].append(q_t)
 
 
-# done, tested
-def _add_to_selected(selected, x_t, y_t, c_t):
+def _add_to_selected(selected, x_t, y_t, c_t) -> None:
     """
-    Adds given sample to given list of selected samples.
+    Appends given sample to list of selected samples.
 
-    :param selected:
-    :param x_t:
-    :param y_t:
-    :param c_t:
-    :return:
+    :param selected: Dictionary containing all samples which were selected for labeling. Expected to be empty or
+                     contain three keys: 'X','y','c'. 'X' contains a numpy array (n,2) where each row represents a
+                     sample and n is the number of queries made so far. 'y' contains a numpy array (n,) where each row
+                     represents a sample label. 'c' contains a list where each element represents the sample weight.
+    :param x_t: (2,) numpy array representing sample data point
+    :param y_t: (1,) numpy array representing sample label
+    :param c_t: Float representing weight given to selected sample
+    :return: None
     """
     if 'X' not in selected:
         selected['X'] = np.array([x_t])
@@ -73,19 +83,21 @@ def _add_to_selected(selected, x_t, y_t, c_t):
         selected['c'].append(c_t)
 
 
-# done, tested
 def _choose_flip_action(flip: int, selected: dict, x_t: np.ndarray, y_t: np.ndarray, p_t: float) -> None:
     """
-    Takes an action depending on the outcome of a coin flip, where 1 indicates label is requested.
+    Takes an action depending on the outcome of a coin flip, where 1 indicates label is requested. If flip is 1,
+    sets sample weight c_t and adds given sample to list of selected samples.
 
-    Note: The paper describes c_t in two ways. Once as 1/p_t. The other as p_min/p_t. I'm not sure whether using one
-    version or the other will impact the results. This function uses 1/p_t.
-    :param flip:
-    :param selected:
-    :param x_t:
-    :param y_t:
-    :param p_t:
-    :return:
+    Note about c_t: The paper defines c_t in two ways: (1) c_t=1/p_t; (2) c_t=p_min/p_t. This implementation uses 1/p_t.
+    :param flip: Integer result of coin flip deciding whether to select sample for labeling. 1 if selected, 0 otherwise.
+    :param selected: Dictionary containing all samples which were selected for labeling. Expected to be empty or
+                     contain three keys: 'X','y','c'. 'X' contains a numpy array (n,2) where each row represents a
+                     sample and n is the number of queries made so far. 'y' contains a numpy array (n,) where each row
+                     represents a sample label. 'c' contains a list where each element represents the sample weight.
+    :param x_t: (2,) numpy array representing sample data point
+    :param y_t: (1,) numpy array representing sample label
+    :param p_t: Float representing probability of selecting sample for labeling
+    :return: none
     """
 
     if flip == 1:  # label is requested
@@ -97,13 +109,15 @@ def _choose_flip_action(flip: int, selected: dict, x_t: np.ndarray, y_t: np.ndar
         _add_to_selected(selected, x_t, y_t, c_t)
 
 
-# done, tested
-def _all_labels_in_selected(selected, labels):
+def _all_labels_in_selected(selected: dict, labels: list) -> bool:
     """
-
-    :param selected:
-    :param labels:
-    :return:
+    Determines whether list of selected samples contains at least one sample for every given label.
+    :param selected: Dictionary containing all samples which were selected for labeling. Expected to be empty or
+                     contain three keys: 'X','y','c'. 'X' contains a numpy array (n,2) where each row represents a
+                     sample and n is the number of queries made so far. 'y' contains a numpy array (n,) where each row
+                     represents a sample label. 'c' contains a list where each element represents the sample weight.
+    :param labels: List of all possible labels for the data set.
+    :return: True if all labels are found, False otherwise.
     """
     for each in labels:
         if each not in selected['y']:
@@ -111,20 +125,34 @@ def _all_labels_in_selected(selected, labels):
     return True
 
 
-# done, tested
 def iwal_query(x_t: np.ndarray, y_t: np.ndarray, history: dict, selected: dict, rejection_threshold: str,
-               loss_function: Any, labels: list = [0, 1], p_min: float = 0.1) -> Any:
+               loss_function: Any = lf.normalized_hinge_loss_1, labels: list = [0, 1], p_min: float = 0.1) -> Any:
     """
+    Performs Importance Weighting Active Learning (IWAL) for a single sample.
 
-    :param x_t:
-    :param y_t:
-    :param history:
-    :param selected:
-    :param rejection_threshold:
-    :param loss_function:
-    :param labels:
-    :param p_min:
-    :return:
+    :param x_t: (2,) numpy array representing sample data point.
+    :param y_t: (1,) numpy array representing sample label.
+    :param history: Dictionary containing query history. Expected to be empty or contain four keys: 'X','y','c','Q'.
+                    'X' contains a numpy array (n,2) where each row represents a sample and n is the number of
+                    queries made so far. 'y' contains a numpy array (n,) where each row represents a sample label.
+                    'c' contains a list where each element represents the probability a sample was selected for
+                    labeling. 'Q' contains a list where each element represents the 0-1 result of a coin flip.
+    :param selected: Dictionary containing all samples which were selected for labeling. Expected to be empty or
+                     contain three keys: 'X','y','c'. 'X' contains a numpy array (n,2) where each row represents a
+                     sample and n is the number of queries made so far. 'y' contains a numpy array (n,) where each row
+                     represents a sample label. 'c' contains a list where each element represents the sample weight.
+    :param rejection_threshold: String defining the rejection_threshold subroutine to use with IWAL. The following
+                                options are accepted: (1) bootstrap. Default value is 'bootstrap'.
+    :param loss_function: Python function which calculates loss normalized to [0,1] range. The following signature is
+                          expected: function_name(predictor:Any, x_t:np.ndarray, label:Any, labels:list) -> Float.
+                          predictor: sklearn model;
+                          x_t: (2,) numpy array representing sample data point;
+                          label: single label from list of labels;
+                          labels: List of all possible labels for the data set.
+                          Default value is iwal.loss_function.normalized_hinge_loss_1.
+    :param labels: List of all possible labels for the data set. Default value is [0,1].
+    :param p_min: Minimum probability for selecting a sample for labeling. Default value is 0.1.
+    :return: Predictor trained on the set of labeled samples.
     """
     # calculate probability of requesting label for x_t using chosen rejection threshold function
     if rejection_threshold == 'bootstrap':
