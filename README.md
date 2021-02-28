@@ -1,7 +1,12 @@
 # CMU-02750-HW1
-Spring 2021 Active Learning Project for Automation of Scientific Research
+Spring 2021 Automation of Scientific Research course project - Study of Query Selection Methods in Active Learning
 
-This project explores basic Active Learning algorithms (Random Sampling, Uncertainty Sampling, Density-based Sampling,  Query-by-Committee) as implemented in the python library modAL. The project also implements an Importance Weighted Active Learning (IWAL) algorithm from scratch.
+### Summary
+The first part of this project explores heuristic query selection methods with pool-based sampling (Uncertainty 
+Sampling, Density-based Sampling, Query-by-Committee) using the `modAL` library. The second part of this project
+implements the Importance Weighted Active Learning (IWAL) algorithm from Beygelzimer et al. (2009) with bootstrap 
+rejection threshold and hinge loss. IWAL is developed as a Python package with unit tests (pytest) and documentation.
+
 
 ### Project Structure
-The IWAL algorithm is implemented as a testable Python package `iwal` and is found under /packages.
+The IWAL algorithm is implemented as Python package `iwal` and is found under /packages.
