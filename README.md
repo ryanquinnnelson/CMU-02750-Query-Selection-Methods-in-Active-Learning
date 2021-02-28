@@ -7,6 +7,8 @@ Sampling, Density-based Sampling, Query-by-Committee) using the `modAL` library.
 implements the Importance Weighted Active Learning (IWAL) algorithm from Beygelzimer et al. (2009) with bootstrap 
 rejection threshold and hinge loss. IWAL is developed as a Python package with unit tests (pytest) and documentation.
 
+Analysis was performed using Jupyter Notebook and Python.
+
 
 ### Project Structure
 The IWAL algorithm is implemented as Python package `iwal` and is found under /packages.
