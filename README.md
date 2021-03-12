@@ -11,3 +11,11 @@ Analysis was performed using Jupyter Notebook and Python.
 
 ### Project Structure
 The IWAL algorithm is implemented as Python package `iwal` and is found under /packages.
+
+
+### Explanation of IWAL
+IWAL is a Type I (hypothesis elimination) active learning algorithm, used for binary and multiclass classification on any data access model. The algorithm labels instances in the disagreement region. To correct for sampling bias, IWAL uses an importance weighting strategy carefully chosen to control variance. Called "loss-weighting", this strategy defines the importance weight for a labeled instance to be inversely proportional to the range of predictions made for that instance over a bounded hypothesis space (i.e. close to optimal). 
+
+*In layman terms, the more disagreement about the predicted label of a given instance, the more likely the algorithm is to select that instance for labeling. This creates bias: This instance is more likely to show up in the training set than the test set. Bias is corrected for by reducing the influence this labeled instance has within the training set by the same amount.*
+
+The reason IWAL is consistent (i.e. converges to the optimal model) is that the rejection threshold it uses to decide whether or not to label an instance is bounded away from zero. With every instance having a chance of being selected for labeling, IWAL will eventually uncover all regions of disagreement.
